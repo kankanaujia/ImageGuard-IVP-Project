@@ -1,0 +1,44 @@
+{
+  "authentic": {
+    "n": 7437,
+    "quality_median": 84.05967523375864,
+    "quality_p10": 84.05967523375864,
+    "quality_p90": 94.20494135196836,
+    "most_common_quality": [
+      {
+        "quality": 84.0,
+        "share": 0.5515664918649993
+      },
+      {
+        "quality": 90.0,
+        "share": 0.26865671641791045
+      },
+      {
+        "quality": 94.0,
+        "share": 0.08444265160683072
+      }
+    ],
+    "ela_peak_median": 15.0
+  },
+  "tampered": {
+    "n": 2064,
+    "quality_median": 88.2841666206506,
+    "quality_p10": 88.2841666206506,
+    "quality_p90": 88.2841666206506,
+    "most_common_quality": [
+      {
+        "quality": 88.0,
+        "share": 0.9055232558139535
+      },
+      {
+        "quality": 98.0,
+        "share": 0.06153100775193798
+      },
+      {
+        "quality": 94.0,
+        "share": 0.0188953488372093
+      }
+    ],
+    "ela_peak_median": 34.0
+  }
+}

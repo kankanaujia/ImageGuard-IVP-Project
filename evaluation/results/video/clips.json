@@ -1,0 +1,1836 @@
+[
+  {
+    "kind": "clean",
+    "seed": 0,
+    "seconds": 24,
+    "speed": 6.967653851402574,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        18.0,
+        19.0,
+        20.0,
+        21.0,
+        22.0,
+        23.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 3.124,
+    "min_ssim": 0.22899388108402785,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 1,
+    "seconds": 20,
+    "speed": 14.455100659585288,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        5.0,
+        10.0,
+        13.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.78,
+    "min_ssim": 0.2327247162431487,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 2,
+    "seconds": 24,
+    "speed": 7.283402577555356,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        5.0,
+        7.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        15.0,
+        16.0,
+        18.0,
+        19.0,
+        20.0,
+        22.0
+      ],
+      "motion": [
+        4.0,
+        8.0,
+        11.0,
+        15.0,
+        18.0,
+        22.0
+      ]
+    },
+    "processing_seconds": 3.023,
+    "min_ssim": 0.2895269443899501,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 3,
+    "seconds": 24,
+    "speed": 6.604915572557097,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        10.0,
+        11.0,
+        13.0,
+        17.0,
+        18.0,
+        21.0,
+        22.0,
+        23.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.959,
+    "min_ssim": 0.14205596635237044,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 4,
+    "seconds": 23,
+    "speed": 9.624603080957979,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        2.0,
+        4.0,
+        5.0,
+        6.0,
+        9.0,
+        11.0,
+        12.0,
+        14.0,
+        17.0,
+        19.0,
+        20.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.934,
+    "min_ssim": 0.21294607135682544,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 5,
+    "seconds": 22,
+    "speed": 12.887348687101431,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        9.0,
+        18.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 3.072,
+    "min_ssim": 0.23646867910044428,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 6,
+    "seconds": 20,
+    "speed": 7.775979567946723,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        4.0,
+        6.0,
+        8.0,
+        9.0,
+        11.0,
+        12.0,
+        13.0,
+        15.0,
+        16.0,
+        18.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.816,
+    "min_ssim": 0.3118143975077562,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 7,
+    "seconds": 25,
+    "speed": 13.86935181066533,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        8.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.908,
+    "min_ssim": 0.2825621584833122,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 8,
+    "seconds": 23,
+    "speed": 14.86004527671718,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        16.0
+      ],
+      "motion": [
+        14.0
+      ]
+    },
+    "processing_seconds": 2.912,
+    "min_ssim": 0.4374115991509688,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 9,
+    "seconds": 20,
+    "speed": 7.154989299963109,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        8.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        15.0,
+        16.0,
+        19.0
+      ],
+      "motion": [
+        7.0,
+        13.0
+      ]
+    },
+    "processing_seconds": 2.771,
+    "min_ssim": 0.3085939221336544,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 10,
+    "seconds": 23,
+    "speed": 6.284499910870616,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        2.0,
+        3.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        18.0,
+        19.0,
+        20.0,
+        21.0,
+        22.0
+      ],
+      "motion": [
+        4.0,
+        8.0,
+        11.0,
+        15.0,
+        18.0,
+        22.0
+      ]
+    },
+    "processing_seconds": 2.81,
+    "min_ssim": 0.3433638975546436,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 11,
+    "seconds": 17,
+    "speed": 9.492056486841264,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        4.0,
+        6.0,
+        9.0,
+        10.0,
+        12.0
+      ],
+      "motion": [
+        3.0,
+        5.0,
+        7.0,
+        9.0,
+        11.0,
+        13.0,
+        15.0
+      ]
+    },
+    "processing_seconds": 2.049,
+    "min_ssim": 0.3123383161403,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 12,
+    "seconds": 22,
+    "speed": 14.41428237145367,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        4.0,
+        8.0,
+        10.0,
+        13.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.891,
+    "min_ssim": 0.3398305836015303,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 13,
+    "seconds": 24,
+    "speed": 13.40832766425265,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        6.0,
+        8.0,
+        14.0,
+        19.0,
+        21.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.617,
+    "min_ssim": 0.2788851909529057,
+    "errors": []
+  },
+  {
+    "kind": "clean",
+    "seed": 14,
+    "seconds": 17,
+    "speed": 7.970413335176822,
+    "edit_start": null,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        6.0,
+        7.0,
+        10.0,
+        13.0,
+        14.0,
+        15.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.316,
+    "min_ssim": 0.31730150884914765,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1000,
+    "seconds": 18,
+    "speed": 10.642260317069626,
+    "edit_start": 10.0,
+    "edit_end": 12.0,
+    "span": 2,
+    "flags": {
+      "scene": [
+        10.0,
+        12.0
+      ],
+      "repeat": [
+        1.0,
+        3.0,
+        6.0,
+        17.0
+      ],
+      "motion": [
+        10.0,
+        12.0
+      ]
+    },
+    "processing_seconds": 2.211,
+    "min_ssim": 0.267872185271922,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1001,
+    "seconds": 25,
+    "speed": 4.172705146023647,
+    "edit_start": 15.0,
+    "edit_end": 19.0,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        16.0,
+        17.0,
+        18.0,
+        20.0,
+        21.0,
+        22.0,
+        24.0
+      ],
+      "motion": [
+        6.0,
+        12.0,
+        15.0,
+        19.0,
+        24.0
+      ]
+    },
+    "processing_seconds": 2.656,
+    "min_ssim": 0.23111429995089447,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1002,
+    "seconds": 22,
+    "speed": 7.929082714380416,
+    "edit_start": 13.0,
+    "edit_end": 15.0,
+    "span": 2,
+    "flags": {
+      "scene": [
+        13.0,
+        15.0
+      ],
+      "repeat": [
+        1.0,
+        3.0,
+        6.0,
+        7.0,
+        8.0,
+        10.0,
+        12.0,
+        14.0,
+        16.0,
+        17.0,
+        19.0,
+        20.0,
+        21.0
+      ],
+      "motion": [
+        13.0,
+        15.0
+      ]
+    },
+    "processing_seconds": 2.509,
+    "min_ssim": 0.2959462626585831,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1003,
+    "seconds": 18,
+    "speed": 6.823763912407044,
+    "edit_start": 5.0,
+    "edit_end": 7.0,
+    "span": 2,
+    "flags": {
+      "scene": [
+        5.0,
+        7.0
+      ],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        6.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0
+      ],
+      "motion": [
+        5.0,
+        7.0
+      ]
+    },
+    "processing_seconds": 2.321,
+    "min_ssim": 0.16474513544578145,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1004,
+    "seconds": 23,
+    "speed": 5.431664433403945,
+    "edit_start": 8.0,
+    "edit_end": 10.0,
+    "span": 2,
+    "flags": {
+      "scene": [
+        8.0,
+        10.0
+      ],
+      "repeat": [
+        1.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        9.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        18.0,
+        19.0,
+        20.0,
+        21.0,
+        22.0
+      ],
+      "motion": [
+        3.0,
+        5.0,
+        7.0,
+        8.0,
+        10.0,
+        12.0,
+        14.0,
+        17.0,
+        19.0,
+        21.0
+      ]
+    },
+    "processing_seconds": 2.513,
+    "min_ssim": 0.2016966892851745,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1005,
+    "seconds": 20,
+    "speed": 14.23618246627464,
+    "edit_start": 11.0,
+    "edit_end": 14.0,
+    "span": 3,
+    "flags": {
+      "scene": [
+        11.0,
+        14.0
+      ],
+      "repeat": [
+        5.0,
+        13.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.348,
+    "min_ssim": 0.22277087535815246,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1006,
+    "seconds": 21,
+    "speed": 10.609426381796203,
+    "edit_start": 9.0,
+    "edit_end": 12.0,
+    "span": 3,
+    "flags": {
+      "scene": [
+        12.0
+      ],
+      "repeat": [
+        3.0,
+        6.0,
+        7.0,
+        13.0,
+        14.0,
+        19.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.443,
+    "min_ssim": 0.20946332244194452,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1007,
+    "seconds": 16,
+    "speed": 12.975783796957376,
+    "edit_start": 5.0,
+    "edit_end": 8.0,
+    "span": 3,
+    "flags": {
+      "scene": [
+        5.0,
+        8.0
+      ],
+      "repeat": [
+        10.0
+      ],
+      "motion": [
+        5.0
+      ]
+    },
+    "processing_seconds": 1.951,
+    "min_ssim": 0.22444200476443515,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1008,
+    "seconds": 19,
+    "speed": 12.94355822501657,
+    "edit_start": 7.0,
+    "edit_end": 10.0,
+    "span": 3,
+    "flags": {
+      "scene": [
+        7.0,
+        10.0
+      ],
+      "repeat": [
+        12.0,
+        13.0,
+        15.0
+      ],
+      "motion": [
+        7.0,
+        9.0,
+        10.0
+      ]
+    },
+    "processing_seconds": 2.304,
+    "min_ssim": 0.3015224763446809,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1009,
+    "seconds": 23,
+    "speed": 7.596071464401479,
+    "edit_start": 12.0,
+    "edit_end": 14.0,
+    "span": 2,
+    "flags": {
+      "scene": [
+        12.0,
+        14.0
+      ],
+      "repeat": [
+        1.0,
+        3.0,
+        5.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        13.0,
+        15.0,
+        17.0,
+        18.0,
+        19.0,
+        21.0
+      ],
+      "motion": [
+        12.0,
+        14.0
+      ]
+    },
+    "processing_seconds": 2.625,
+    "min_ssim": 0.24785321683196537,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1010,
+    "seconds": 22,
+    "speed": 9.893863043605279,
+    "edit_start": 15.0,
+    "edit_end": 17.0,
+    "span": 2,
+    "flags": {
+      "scene": [
+        15.0,
+        17.0
+      ],
+      "repeat": [
+        1.0,
+        2.0,
+        7.0,
+        9.0,
+        16.0,
+        19.0
+      ],
+      "motion": [
+        15.0,
+        17.0
+      ]
+    },
+    "processing_seconds": 2.676,
+    "min_ssim": 0.18337033264503033,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1011,
+    "seconds": 18,
+    "speed": 10.19655889060335,
+    "edit_start": 9.0,
+    "edit_end": 11.0,
+    "span": 2,
+    "flags": {
+      "scene": [
+        9.0,
+        11.0
+      ],
+      "repeat": [
+        4.0,
+        12.0,
+        15.0
+      ],
+      "motion": [
+        6.0,
+        9.0,
+        11.0,
+        16.0
+      ]
+    },
+    "processing_seconds": 2.156,
+    "min_ssim": 0.2894176349800628,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1012,
+    "seconds": 23,
+    "speed": 12.587113528157916,
+    "edit_start": 8.0,
+    "edit_end": 12.0,
+    "span": 4,
+    "flags": {
+      "scene": [
+        8.0,
+        12.0
+      ],
+      "repeat": [
+        4.0,
+        5.0,
+        16.0,
+        18.0
+      ],
+      "motion": [
+        12.0
+      ]
+    },
+    "processing_seconds": 2.585,
+    "min_ssim": 0.200968136692396,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1013,
+    "seconds": 17,
+    "speed": 4.868774187316817,
+    "edit_start": 7.0,
+    "edit_end": 11.0,
+    "span": 4,
+    "flags": {
+      "scene": [
+        7.0,
+        11.0
+      ],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        5.0,
+        6.0,
+        8.0,
+        9.0,
+        10.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0
+      ],
+      "motion": [
+        7.0,
+        11.0
+      ]
+    },
+    "processing_seconds": 2.022,
+    "min_ssim": 0.21122451985357557,
+    "errors": []
+  },
+  {
+    "kind": "insertion",
+    "seed": 1014,
+    "seconds": 21,
+    "speed": 10.44272535830456,
+    "edit_start": 11.0,
+    "edit_end": 14.0,
+    "span": 3,
+    "flags": {
+      "scene": [
+        11.0,
+        14.0
+      ],
+      "repeat": [
+        3.0,
+        4.0,
+        6.0,
+        16.0,
+        17.0
+      ],
+      "motion": [
+        11.0,
+        14.0
+      ]
+    },
+    "processing_seconds": 2.204,
+    "min_ssim": 0.30205062268612665,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2000,
+    "seconds": 18,
+    "speed": 11.220670702221756,
+    "edit_start": 8.0,
+    "edit_end": 12.0,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        2.0,
+        6.0,
+        7.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        15.0
+      ],
+      "motion": [
+        5.0,
+        14.0
+      ]
+    },
+    "processing_seconds": 1.888,
+    "min_ssim": 0.3129835394322261,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2001,
+    "seconds": 16,
+    "speed": 6.24096965707104,
+    "edit_start": 9.0,
+    "edit_end": 13.0,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        15.0
+      ],
+      "motion": [
+        5.0,
+        9.0
+      ]
+    },
+    "processing_seconds": 1.827,
+    "min_ssim": 0.30692524009878214,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2002,
+    "seconds": 24,
+    "speed": 14.567823502836333,
+    "edit_start": 5.0,
+    "edit_end": 7.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        5.0,
+        6.0,
+        7.0,
+        11.0,
+        16.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.744,
+    "min_ssim": 0.25850372122393395,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2003,
+    "seconds": 23,
+    "speed": 13.692748142969819,
+    "edit_start": 11.0,
+    "edit_end": 13.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        9.0,
+        12.0,
+        13.0,
+        19.0,
+        21.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.744,
+    "min_ssim": 0.3184032638047684,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2004,
+    "seconds": 23,
+    "speed": 7.199969068969961,
+    "edit_start": 5.0,
+    "edit_end": 7.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        10.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        19.0,
+        20.0,
+        22.0
+      ],
+      "motion": [
+        8.0,
+        13.0,
+        18.0
+      ]
+    },
+    "processing_seconds": 2.596,
+    "min_ssim": 0.34307481566499276,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2005,
+    "seconds": 19,
+    "speed": 9.322579875849776,
+    "edit_start": 6.0,
+    "edit_end": 8.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        2.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        10.0,
+        11.0,
+        15.0,
+        16.0
+      ],
+      "motion": [
+        4.0,
+        9.0,
+        12.0,
+        15.0,
+        18.0
+      ]
+    },
+    "processing_seconds": 2.266,
+    "min_ssim": 0.3428557688566965,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2006,
+    "seconds": 17,
+    "speed": 10.149787831818223,
+    "edit_start": 8.0,
+    "edit_end": 12.0,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        5.0,
+        6.0,
+        7.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0
+      ],
+      "motion": [
+        7.0
+      ]
+    },
+    "processing_seconds": 2.006,
+    "min_ssim": 0.277927076216013,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2007,
+    "seconds": 19,
+    "speed": 9.30524099691202,
+    "edit_start": 10.0,
+    "edit_end": 12.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        10.0,
+        11.0,
+        12.0,
+        16.0,
+        17.0,
+        18.0
+      ],
+      "motion": [
+        4.0,
+        7.0,
+        10.0,
+        16.0
+      ]
+    },
+    "processing_seconds": 2.235,
+    "min_ssim": 0.3658580204183477,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2008,
+    "seconds": 22,
+    "speed": 11.545472317916156,
+    "edit_start": 9.0,
+    "edit_end": 12.0,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        4.0,
+        6.0,
+        7.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        16.0,
+        17.0,
+        21.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.557,
+    "min_ssim": 0.3431542658119303,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2009,
+    "seconds": 25,
+    "speed": 10.616019194773234,
+    "edit_start": 16.0,
+    "edit_end": 18.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        2.0,
+        10.0,
+        12.0,
+        16.0,
+        17.0,
+        18.0,
+        21.0,
+        22.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.807,
+    "min_ssim": 0.22203091098782754,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2010,
+    "seconds": 23,
+    "speed": 10.427513272811282,
+    "edit_start": 6.0,
+    "edit_end": 10.0,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        3.0,
+        4.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        13.0,
+        15.0,
+        17.0,
+        18.0,
+        20.0,
+        21.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.521,
+    "min_ssim": 0.3693057530425044,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2011,
+    "seconds": 23,
+    "speed": 6.770877799448581,
+    "edit_start": 9.0,
+    "edit_end": 11.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        18.0,
+        20.0,
+        22.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.597,
+    "min_ssim": 0.2613911322000024,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2012,
+    "seconds": 24,
+    "speed": 4.805458757787864,
+    "edit_start": 10.0,
+    "edit_end": 12.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        18.0,
+        20.0,
+        21.0,
+        22.0,
+        23.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.689,
+    "min_ssim": 0.27919251492032876,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2013,
+    "seconds": 20,
+    "speed": 6.880086610544435,
+    "edit_start": 7.0,
+    "edit_end": 9.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        5.0,
+        7.0,
+        8.0,
+        9.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        16.0,
+        17.0,
+        18.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.374,
+    "min_ssim": 0.209454490466885,
+    "errors": []
+  },
+  {
+    "kind": "freeze",
+    "seed": 2014,
+    "seconds": 19,
+    "speed": 11.856758005021714,
+    "edit_start": 10.0,
+    "edit_end": 12.0,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        5.0,
+        6.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        15.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.267,
+    "min_ssim": 0.23356362351524254,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3000,
+    "seconds": 23,
+    "speed": 7.608875722363072,
+    "edit_start": 14.0,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        4.0,
+        8.0,
+        9.0,
+        11.0,
+        12.0,
+        13.0,
+        15.0,
+        16.0,
+        18.0,
+        19.0,
+        20.0,
+        21.0,
+        22.0
+      ],
+      "motion": [
+        14.0
+      ]
+    },
+    "processing_seconds": 2.35,
+    "min_ssim": 0.28964899205229194,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3001,
+    "seconds": 19,
+    "speed": 13.129250446631856,
+    "edit_start": 8.0,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        3.0,
+        6.0,
+        7.0,
+        11.0,
+        13.0,
+        16.0
+      ],
+      "motion": [
+        8.0,
+        14.0
+      ]
+    },
+    "processing_seconds": 2.242,
+    "min_ssim": 0.23536164523956643,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3002,
+    "seconds": 20,
+    "speed": 9.84422468130336,
+    "edit_start": 13.0,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        3.0,
+        5.0,
+        10.0,
+        12.0,
+        14.0,
+        17.0,
+        19.0
+      ],
+      "motion": [
+        13.0
+      ]
+    },
+    "processing_seconds": 2.284,
+    "min_ssim": 0.17734311740471193,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3003,
+    "seconds": 25,
+    "speed": 13.751247459542814,
+    "edit_start": 7.0,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        3.0
+      ],
+      "motion": [
+        7.0
+      ]
+    },
+    "processing_seconds": 2.697,
+    "min_ssim": 0.20778310032623443,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3004,
+    "seconds": 19,
+    "speed": 14.903848337756962,
+    "edit_start": 9.0,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        15.0
+      ],
+      "motion": [
+        9.0
+      ]
+    },
+    "processing_seconds": 2.18,
+    "min_ssim": 0.3112709692039177,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3005,
+    "seconds": 21,
+    "speed": 14.562114576548357,
+    "edit_start": 9.0,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        12.0,
+        16.0
+      ],
+      "motion": []
+    },
+    "processing_seconds": 2.311,
+    "min_ssim": 0.31290310881911115,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3006,
+    "seconds": 17,
+    "speed": 7.275632198008587,
+    "edit_start": 9.0,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        3.0,
+        4.0,
+        5.0,
+        7.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        16.0
+      ],
+      "motion": [
+        4.0,
+        8.0,
+        9.0,
+        11.0,
+        15.0
+      ]
+    },
+    "processing_seconds": 1.802,
+    "min_ssim": 0.331697952460651,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3007,
+    "seconds": 25,
+    "speed": 14.43856792656813,
+    "edit_start": 6.0,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        5.0,
+        15.0,
+        18.0,
+        23.0
+      ],
+      "motion": [
+        6.0
+      ]
+    },
+    "processing_seconds": 2.523,
+    "min_ssim": 0.3235725667691669,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3008,
+    "seconds": 23,
+    "speed": 14.47612902997673,
+    "edit_start": 10.0,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        2.0,
+        11.0,
+        15.0,
+        17.0
+      ],
+      "motion": [
+        10.0
+      ]
+    },
+    "processing_seconds": 2.368,
+    "min_ssim": 0.27052214575494965,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3009,
+    "seconds": 18,
+    "speed": 7.03658432046275,
+    "edit_start": 5.0,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        4.0,
+        6.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0
+      ],
+      "motion": [
+        5.0
+      ]
+    },
+    "processing_seconds": 1.923,
+    "min_ssim": 0.28609177994791013,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3010,
+    "seconds": 25,
+    "speed": 6.812400526156619,
+    "edit_start": 9.0,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        6.0,
+        7.0,
+        8.0,
+        11.0,
+        12.0,
+        14.0,
+        15.0,
+        17.0,
+        18.0,
+        20.0,
+        22.0,
+        23.0,
+        24.0
+      ],
+      "motion": [
+        9.0
+      ]
+    },
+    "processing_seconds": 2.37,
+    "min_ssim": 0.14201362645430574,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3011,
+    "seconds": 25,
+    "speed": 10.280480388188172,
+    "edit_start": 8.0,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        5.0,
+        7.0,
+        11.0,
+        13.0,
+        14.0,
+        16.0,
+        17.0,
+        23.0,
+        24.0
+      ],
+      "motion": [
+        4.0,
+        8.0,
+        11.0,
+        14.0,
+        18.0,
+        21.0
+      ]
+    },
+    "processing_seconds": 2.234,
+    "min_ssim": 0.26780538842098833,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3012,
+    "seconds": 22,
+    "speed": 6.9281359839135765,
+    "edit_start": 6.0,
+    "edit_end": null,
+    "span": 4,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        4.0,
+        5.0,
+        7.0,
+        8.0,
+        10.0,
+        12.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        19.0,
+        20.0
+      ],
+      "motion": [
+        6.0
+      ]
+    },
+    "processing_seconds": 2.225,
+    "min_ssim": 0.1428365480769304,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3013,
+    "seconds": 24,
+    "speed": 8.205325817300224,
+    "edit_start": 9.0,
+    "edit_end": null,
+    "span": 3,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        3.0,
+        5.0,
+        6.0,
+        8.0,
+        10.0,
+        13.0,
+        14.0,
+        15.0,
+        18.0,
+        20.0,
+        21.0,
+        23.0
+      ],
+      "motion": [
+        5.0,
+        9.0,
+        12.0,
+        17.0,
+        22.0
+      ]
+    },
+    "processing_seconds": 2.049,
+    "min_ssim": 0.24525489288719096,
+    "errors": []
+  },
+  {
+    "kind": "deletion",
+    "seed": 3014,
+    "seconds": 18,
+    "speed": 4.256616332207643,
+    "edit_start": 10.0,
+    "edit_end": null,
+    "span": 2,
+    "flags": {
+      "scene": [],
+      "repeat": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0
+      ],
+      "motion": [
+        4.0,
+        8.0,
+        10.0,
+        14.0
+      ]
+    },
+    "processing_seconds": 1.472,
+    "min_ssim": 0.2926327402980965,
+    "errors": []
+  }
+]

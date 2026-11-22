@@ -1,0 +1,63 @@
+{
+  "per_kind": {
+    "insertion": {
+      "clips": 15,
+      "expected_check": "scene",
+      "detected_by_expected_check": 14,
+      "detected_by_any_check": 15,
+      "by_check": {
+        "scene": 14,
+        "repeat": 10,
+        "motion": 13
+      }
+    },
+    "freeze": {
+      "clips": 15,
+      "expected_check": "repeat",
+      "detected_by_expected_check": 15,
+      "detected_by_any_check": 15,
+      "by_check": {
+        "scene": 0,
+        "repeat": 15,
+        "motion": 5
+      }
+    },
+    "deletion": {
+      "clips": 15,
+      "expected_check": "motion",
+      "detected_by_expected_check": 14,
+      "detected_by_any_check": 14,
+      "by_check": {
+        "scene": 0,
+        "repeat": 12,
+        "motion": 14
+      }
+    }
+  },
+  "false_alarms": {
+    "scene": {
+      "clips_with_any_flag": 0,
+      "clips": 15,
+      "flags_per_minute": 0.0
+    },
+    "repeat": {
+      "clips_with_any_flag": 15,
+      "clips": 15,
+      "flags_per_minute": 25.24390243902439
+    },
+    "motion": {
+      "clips_with_any_flag": 5,
+      "clips": 15,
+      "flags_per_minute": 4.024390243902439
+    },
+    "any": {
+      "clips_with_any_flag": 15,
+      "clips": 15
+    }
+  },
+  "processing_seconds": {
+    "mean": 2.444233333333334,
+    "max": 3.124
+  },
+  "errors": 0
+}

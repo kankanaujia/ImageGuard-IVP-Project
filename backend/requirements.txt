@@ -1,0 +1,16 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+python-multipart>=0.0.9
+SQLAlchemy>=2.0,<3
+Pillow>=10.0
+# <2.3: newer NumPy wheels are blocked by Windows Smart App Control on this machine
+numpy>=1.26,<2.3
+opencv-python-headless>=4.9
+scipy>=1.12
+scikit-image>=0.22
+matplotlib>=3.8
+ImageHash>=4.3
+piexif>=1.1
+reportlab>=4.0
+pytest>=8.0
+httpx>=0.27

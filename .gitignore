@@ -1,0 +1,17 @@
+node_modules/
+.next/
+frontend/.env.local
+backend/.venv/
+backend/__pycache__/
+**/__pycache__/
+*.py[cod]
+backend/uploads/**
+backend/outputs/**
+backend/reports/*.pdf
+backend/imageguard.db
+.pytest_cache/
+coverage/
+*.tsbuildinfo
+# Local tooling and large intermediates
+.claude/
+documentation/build/screenshots/raw/
