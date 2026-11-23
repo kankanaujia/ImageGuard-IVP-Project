@@ -60,10 +60,10 @@ def architecture():
     group(ax, 1, 26, 98, 17, "Application layer (FastAPI, Python)", where="top-right")
     api = box(ax, 4, 28, 26, 9.5, "REST API\n/api/image|video/analyze\n/api/investigations …", "api", 8)
     val = box(ax, 35, 28, 26, 9.5, "Validation & integrity\nextension · size · content\nSHA-256 at intake", "api", 8)
-    eng = box(ax, 66, 28, 30, 9.5, "Analysis engine\nruns each check independently,\nrecords per-check errors", "proc", 8)
+    eng = box(ax, 66, 28, 30, 9.5, "Background analysis jobs\nchecks run independently,\nprogress reported per stage", "proc", 8)
     group(ax, 1, 3, 62, 20, "Processing layer (OpenCV, scikit-image, Pillow, ImageHash)", where="bottom-left")
-    box(ax, 4, 8, 27, 12, "Image checks\nELA · ORB copy-move\nnoise residual\nhistogram · EXIF", "img", 8)
-    box(ax, 34, 8, 27, 12, "Video checks\nframe sampling · pHash\nSSIM · scene histogram\nFarnebäck optical flow", "vid", 8)
+    box(ax, 4, 8, 27, 12, "Image checks\nELA + heat map · ORB copy-move\nnoise heat map · compression\nhistogram · EXIF", "img", 8)
+    box(ax, 34, 8, 27, 12, "Video checks\nframe sampling · pHash + motion\nSSIM · scene histogram\nFarnebäck optical flow", "vid", 8)
     group(ax, 66, 3, 33, 20, "Storage layer", where="bottom-right")
     box(ax, 68, 14, 14, 6.5, "SQLite\ninvestigations", "store", 7.5)
     box(ax, 84, 14, 13, 6.5, "uploads/\n(originals)", "store", 7.5)
@@ -86,10 +86,10 @@ def workflow():
         ("Stream to disk under a random name (UUID); enforce size", "api"),
         ("Validate content (Pillow decode / OpenCV open)", "api"),
         ("Compute SHA-256 of the stored original", "api"),
-        ("Run independent checks; record errors per check", "proc"),
+        ("Background job runs the checks; progress reported per stage", "proc"),
         ("Save result JSON in SQLite; write visualizations", "store"),
         ("Generate PDF report (retried on download if it fails)", "store"),
-        ("Return JSON; UI shows metrics, charts, comparisons", "ui"),
+        ("UI polls the job, then shows metrics, maps, charts and notes", "ui"),
     ]
     y = 92; boxes = []
     for i, (t, c) in enumerate(steps):
@@ -106,12 +106,13 @@ def workflow():
 def pipelines():
     fig, ax = canvas(10, 5.2)
     src = box(ax, 2, 22, 13, 9, "Image\n(JPG, PNG,\nTIFF, BMP, WebP)", "ui", 8)
-    checks = [("ELA: re-save at JPEG Q90,\n|original − recompressed| ×(255/peak)", "img"),
-              ("ORB (2500 keypoints) self-match,\nratio 0.78, ≥24 px apart, RANSAC affine", "img"),
-              ("Noise residual: |I − Gauss3×3(I)|,\nvariance over 8×8 tiles", "img"),
-              ("RGB histograms (256 bins),\ngrey mean and spread", "img"),
+    checks = [("ELA at JPEG Q90 + block heat map\n(robust z of 16×16 block means)", "img"),
+              ("ORB self-match, oriented + de-duplicated,\nrepeated RANSAC; flag: ≥5 matches, ≥40 px", "img"),
+              ("Noise heat map: wavelet σ = median|HH|/0.6745\nper block, robust z", "img"),
+              ("Compression: quantization tables →\nquality, IJG vs custom tables", "img"),
+              ("RGB histograms (256 bins)", "img"),
               ("EXIF tags (Pillow)", "img")]
-    cb = [box(ax, 24, 42 - i * 9.6, 44, 7.6, t, c, 7.5) for i, (t, c) in enumerate(checks)]
+    cb = [box(ax, 24, 44 - i * 8.2, 44, 6.6, t, c, 7.2) for i, (t, c) in enumerate(checks)]
     out = box(ax, 76, 20, 22, 13, "Per-check result\n(status, metrics,\nvisualization, caveat)\n+ indicator summary", "proc", 7.5)
     for b in cb:
         arrow(ax, mid(src, "r"), mid(b, "l")); arrow(ax, mid(b, "r"), mid(out, "l"))
@@ -120,7 +121,7 @@ def pipelines():
     fig, ax = canvas(10, 5.2)
     src = box(ax, 1, 22, 11, 9, "Video\n(MP4, AVI,\nMOV, MKV)", "ui", 8)
     smp = box(ax, 15, 21, 15, 11, "Frame sampling\n1 frame / s\n(max 180 frames)", "vid", 8)
-    checks = ["Perceptual hash (pHash):\nneighbour distance ≤ 4 → repeat",
+    checks = ["pHash distance ≤ 4 AND optical-flow\nmotion ≤ 1 px → repeat",
               "SSIM between neighbours\n(scikit-image)",
               "8×8×8 colour histogram,\nBhattacharyya ≥ 0.55 → scene cut",
               "Farnebäck dense flow per pair\n(480 px), spikes: median + 3.5·MAD"]
@@ -174,14 +175,14 @@ def use_cases():
 def data_model():
     fig, ax = canvas(9, 4.6)
     fields = ["id : UUID (PK)", "media_type : image | video", "original_name : text", "stored_name : UUID + extension",
-              "mime_type : text", "size_bytes : integer", "sha256 : 64 hex chars", "created_at : UTC timestamp", "result_json : full analysis (JSON)"]
-    box(ax, 4, 40, 34, 5, "Investigation (SQLite table)", "api", 9, True, "square,pad=0.2")
+              "mime_type : text", "size_bytes : integer", "sha256 : 64 hex chars", "created_at : UTC timestamp", "result_json : full analysis (JSON)", "notes : investigator's notes"]
+    box(ax, 4, 41, 34, 4.5, "Investigation (SQLite table)", "api", 9, True, "square,pad=0.2")
     for i, f in enumerate(fields):
-        box(ax, 4, 35 - i * 4, 34, 4, f, "white", 8, style="square,pad=0.2")
-    notes = [("uploads/{stored_name}", "original evidence, never modified"), ("outputs/{id}/", "ela.png, orb.png, noise.png, histogram.png,\nssim.png, flow.png, frames/frame_*.jpg, frames/flow_*.jpg"),
-             ("reports/{id}.pdf", "generated report")]
+        box(ax, 4, 37 - i * 3.6, 34, 3.6, f, "white", 7.6, style="square,pad=0.2")
+    notes = [("uploads/{stored_name}", "original evidence, never modified"), ("outputs/{id}/", "ela.png, ela_map.png, orb.png, noise_map.png, histogram.png,\nssim.png, flow.png, frames/frame_*.jpg, frames/flow_*.jpg"),
+             ("reports/{id}-v2.pdf", "generated PDF report")]
     for i, (k, v) in enumerate(notes):
-        b = box(ax, 50, 34 - i * 12, 46, 9.5, f"{k}\n{v}", "store", 7.8)
+        b = box(ax, 45, 34 - i * 12, 43, 9.5, f"{k}\n{v}", "store", 7.0)
         arrow(ax, (38.4, 30 - i * 6), mid(b, "l"))
     save(fig, "fig_data_model")
 

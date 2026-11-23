@@ -32,7 +32,12 @@ def load(path: Path):
 CASIA = load(RESULTS / "casia" / "metrics.json")
 JQ = load(RESULTS / "casia" / "jpeg_quality.json")
 VIDEO = load(RESULTS / "video" / "metrics.json")
+LOC = load(RESULTS / "casia" / "localization.json")
+CMT = load(RESULTS / "casia" / "copy_move_tuning.json")
 PENDING = "[pending]"
+# Measured with the first version (commit cd4f057) before the improvements of Section 5.5.4.
+BEFORE = {"repeat_fpm": 25.24, "repeat_clips": "15/15", "cm_full_recall": 0.301, "cm_full_fpr": 0.107, "cm_full_precision": 0.658,
+          "video_indicators_example": 14}
 
 
 def cm(*keys, fmt="{:.3f}", default=PENDING):
@@ -59,12 +64,13 @@ FIGR = lambda key, file, w, cap: B.append(("fig", key, file, w, cap))
 
 ABSTRACT = [
     "Digital images and videos are routinely used as evidence in journalism, insurance claims, academic integrity cases and legal proceedings, yet free editing tools make convincing manipulation easy. Most people who must judge such media have no practical way to examine it beyond looking at it. This project presents **ImageGuard**, a locally hosted web application that screens images and videos with classical, explainable image and video processing techniques and presents every observation together with its limitations, rather than issuing an opaque \"fake\" or \"real\" verdict.",
-    "For images, ImageGuard performs Error Level Analysis (ELA), ORB keypoint self-matching with RANSAC geometric verification for copy-move detection, noise-residual consistency analysis, colour histogram analysis and EXIF metadata extraction. For videos, it samples one frame per second and applies perceptual hashing to find repeated frames, the Structural Similarity Index (SSIM) and colour-histogram distance to find abrupt changes, and Farnebäck dense optical flow across every pair of sampled frames with a robust median/MAD test to flag motion discontinuities. Every upload is stored unmodified under a random name and fingerprinted with SHA-256 so that its integrity can be re-verified at any time, and each investigation produces a PDF report.",
+    "For images, ImageGuard performs Error Level Analysis (ELA) with a localised block heat map, ORB keypoint self-matching with repeated RANSAC for copy-move detection, a wavelet noise-consistency map, JPEG compression-history analysis, colour histograms and EXIF metadata extraction. For videos, it samples one frame per second and applies perceptual hashing confirmed by optical flow to find repeated frames, the Structural Similarity Index (SSIM) and colour-histogram distance to find abrupt changes, and Farnebäck dense optical flow across every pair of sampled frames with a robust median/MAD test to flag motion discontinuities. Every upload is stored unmodified under a random name and fingerprinted with SHA-256 so that its integrity can be re-verified at any time; analyses run as background jobs with live progress, several files can be analysed in one batch, investigators can record case notes, and each investigation produces a readable PDF report.",
     "The system is built with FastAPI, OpenCV, scikit-image and SQLite on the back end and Next.js with React and TypeScript on the front end. It was evaluated on the public CASIA v2.0 tampering dataset and on a synthetic video benchmark of 60 clips with known edits. "
-    + (f"On all {CASIA['n']:,} CASIA v2.0 images, the ELA peak difference separated authentic from tampered images with an AUC of {cm('scores','ELA peak difference','auc')}, but a measurement of the files' JPEG quantization tables showed that much of this comes from the dataset's systematically different save settings rather than from the edits themselves. "
-       f"The copy-move score reached an AUC of {cm('scores','ORB consistent matches','auc')}; the app's copy-move rule flagged {pct(CASIA['by_type']['copy-move']['recall'])} of copy-move forgeries at a false-positive rate of {pct(CASIA['app_threshold']['fpr'])}. " if CASIA else "The CASIA v2.0 results are reported in Chapter 5. ")
-    + (f"On the video benchmark, inserted footage was flagged in {VIDEO['per_kind']['insertion']['detected_by_any_check']} of {VIDEO['per_kind']['insertion']['clips']} clips and deleted sections in {VIDEO['per_kind']['deletion']['detected_by_any_check']} of {VIDEO['per_kind']['deletion']['clips']}, with no false scene-cut alarms on clean clips; the evaluation also exposed that the repeated-frame check is unreliable on slowly panning footage. " if VIDEO else "")
-    + "The results show that explainable, training-free techniques are useful for screening and for directing human attention, while also making their failure modes visible.",
+    + (f"On all {CASIA['n']:,} CASIA v2.0 images, the global ELA peak separated authentic from tampered images with an AUC of {cm('scores','ELA peak difference','auc')}, but a measurement of the files' JPEG quantization tables showed that much of this comes from the dataset's systematically different save settings. "
+       + (f"The localised ELA heat map, evaluated against {LOC['evaluated']:,} ground-truth masks, ranks edited pixels above unedited ones with a pixel AUC of {LOC['by_type']['all']['ela']['pixel_auc']:.2f}. " if LOC else "")
+       + (f"Re-tuning the copy-move rule on one half of the dataset and testing on the other cut its false-alarm rate from {pct(CMT['test']['previous_rule']['fpr'])} to {pct(CMT['test']['chosen']['fpr'])}. " if CMT else "") if CASIA else "The CASIA v2.0 results are reported in Chapter 5. ")
+    + (f"On the video benchmark, inserted footage was flagged in {VIDEO['per_kind']['insertion']['detected_by_any_check']} of {VIDEO['per_kind']['insertion']['clips']} clips and deleted sections in {VIDEO['per_kind']['deletion']['detected_by_any_check']} of {VIDEO['per_kind']['deletion']['clips']}; confirming repeated frames with optical flow removed all false repeat alarms on clean panning clips (previously {BEFORE['repeat_fpm']:.0f} per minute) while still catching every frozen segment. " if VIDEO else "")
+    + "The results show that explainable, training-free techniques are useful for screening and for directing human attention, and that measuring their failure modes is what makes them trustworthy.",
     "**Keywords:** image forensics, video forensics, error level analysis, copy-move detection, ORB, SSIM, optical flow, perceptual hashing, evidence integrity.",
 ]
 
@@ -84,7 +90,7 @@ H1("CHAPTER 1: INTRODUCTION")
 H2("1.1 Project Overview")
 P("**Problem statement.** Image and video editing software can now alter photographs and footage in ways that are invisible to a casual viewer: regions are copied to hide or duplicate objects, content from other pictures is spliced in, and video segments are removed, repeated or inserted. People who have to decide whether such media can be trusted (teachers, journalists, claims officers, investigators) rarely have forensic training or tools, and many available online checkers either upload the evidence to a third-party server or return a single score that cannot be explained or challenged.")
 P("**Goal.** The goal of this project is to give a non-specialist investigator a private, local tool that examines an image or a video with established image and video processing techniques, shows *what* each technique observed and *where*, states the limits of each observation, and keeps the original evidence verifiably unchanged.")
-P("**Solution.** ImageGuard is a web application that runs entirely on the investigator's computer. The user uploads a file in the browser; a FastAPI back end validates it, stores the untouched original under a random name, records its SHA-256 fingerprint and runs a set of independent forensic checks. Images go through error level analysis, copy-move detection, noise-residual analysis, histogram analysis and metadata extraction; videos are sampled and examined for repeated frames, abrupt similarity changes, scene cuts and motion discontinuities. Results are stored in a local SQLite database, displayed as interactive comparisons, charts and frame timelines, and exported as a PDF report. The architecture is shown in {fig:arch}.")
+P("**Solution.** ImageGuard is a web application that runs entirely on the investigator's computer. The user uploads a file in the browser; a FastAPI back end validates it, stores the untouched original under a random name, records its SHA-256 fingerprint and runs a set of independent forensic checks. Images go through error level analysis (with a localised heat map), copy-move detection, noise-consistency analysis, compression-history analysis, histogram analysis and metadata extraction; videos are sampled and examined for repeated frames, abrupt similarity changes, scene cuts and motion discontinuities. Analyses run as background jobs with live progress, and several files can be analysed in one batch. Results are stored in a local SQLite database, displayed as interactive comparisons (side by side or with a wipe slider, with zoom), heat maps, charts and frame timelines, annotated with the investigator's case notes and exported as a PDF report. The architecture is shown in {fig:arch}.")
 
 H2("1.2 Need Analysis")
 P("Manipulated media is a recognised and growing problem. Farid's survey of image forgery detection [14] and Verdoliva's overview of media forensics [15] both describe how inexpensive tools have made manipulation routine and how detection has become an arms race. The need for this work rests on four observations:")
@@ -133,20 +139,23 @@ OL(["To design and implement a local web application that accepts image and vide
     "To evaluate the techniques quantitatively on the CASIA v2.0 dataset and a synthetic video benchmark, and to report their strengths and failure modes honestly."])
 
 H2("1.8 Methodology Used")
-P("The project followed an iterative, prototype-driven methodology. After a literature survey (Chapter 2) the team selected techniques that are well established, explainable and fast on a CPU. Each technique was implemented as an independent Python function with unit tests, integrated behind a common analysis engine that records a status per check, and exposed through REST endpoints. The user interface was then built page by page and checked in the browser against real analyses. Finally, two evaluation harnesses were written: one runs the real pipeline over CASIA v2.0 and computes ROC/AUC, precision, recall and false-positive rates; the other generates videos with known edits and checks whether each edit is flagged at the right moment. Findings from the evaluation fed back into the design (for example, the switch from two-frame to full-video optical flow). Details are given in Chapter 3.")
+P("The project followed an iterative, prototype-driven methodology. After a literature survey (Chapter 2) the team selected techniques that are well established, explainable and fast on a CPU. Each technique was implemented as an independent Python function with unit tests, integrated behind a common analysis engine that records a status per check, and exposed through REST endpoints. The user interface was then built page by page and checked in the browser against real analyses. Finally, two evaluation harnesses were written: one runs the real pipeline over CASIA v2.0 and computes ROC/AUC, precision, recall and false-positive rates; the other generates videos with known edits and checks whether each edit is flagged at the right moment. Findings from the evaluation fed back into the design in a second iteration: full-video optical flow, a copy-move rule re-tuned on held-out data, motion-confirmed repeated frames, localised heat maps evaluated against ground-truth masks, background jobs with progress, batch analysis, case notes and readable PDF reports (Section 5.5.4). Details are given in Chapter 3.")
 
 H2("1.9 Project Outcomes and Deliverables")
 UL(["A working application: FastAPI back end (Python) and Next.js front end (TypeScript) with five pages: Overview, New Investigation, Image Forensics, Video Forensics and Reports.",
-    "Five image checks and four video checks, each returning metrics, a visualisation and an interpretation caveat.",
-    "Evidence integrity: random storage names, SHA-256 at intake and an on-demand verification endpoint.",
-    "Automatic PDF reports for every investigation.",
-    "An automated test suite (10 tests) and two reproducible evaluation scripts with their results (CASIA v2.0 and the synthetic video benchmark).",
-    "This report and the project documentation (README with installation and run instructions)."])
+    "Six image checks (two with localised heat maps) and four video checks, each returning metrics, a visualisation and an interpretation caveat.",
+    "Evidence integrity: random storage names, SHA-256 at intake and one-click re-verification; investigations can be deleted completely.",
+    "Background analysis with live progress, batch analysis of many files or a whole folder, case notes, and readable PDF reports.",
+    "A one-click start script (`start.ps1`) that launches both servers and opens the app.",
+    "An automated test suite (26 tests, including 12 end-to-end API tests) and five reproducible evaluation scripts with their results.",
+    "This report, a presentation and the project documentation (README with installation and run instructions)."])
 
 H2("1.10 Novelty of Work")
 UL(["**Explanation-first design.** Each check reports what it measured, how to read it and when it misleads, and the interface places the original next to each visualisation so the user can judge for themselves.",
     "**Full-video motion analysis with robust spike detection.** Optical flow is computed for every pair of sampled frames and spikes are detected with a median/MAD rule, so a single busy scene does not hide another.",
     "**Bias-aware evaluation.** The CASIA evaluation reports results on all images and on JPEG-only images and measures the JPEG save settings of each class, exposing how much apparent accuracy comes from how the files were saved rather than from the tampering.",
+    "**Evaluation-driven improvement.** Decision rules were chosen on one half of the data and reported on the other, localisation was measured against ground-truth masks, and every change was re-measured on the same benchmarks (Section 5.5.4).",
+    "**Motion-confirmed repeated frames.** A perceptual-hash repeat counts only when optical flow also shows no motion, which removes the false alarms that hashing alone raises on panning footage.",
     "**Fully local and integrity-preserving.** No evidence leaves the machine, and the stored original can be re-hashed at any time."])
 
 # ----------------------------------------------------------------------- Chapter 2
@@ -210,9 +219,13 @@ TAB("features", "Functional requirements", ["ID", "Requirement"], [
     ["FR7", "The system shall display each result with metrics, a visualisation, interpretation guidance and limitations."],
     ["FR8", "The system shall let the user re-verify the stored original's hash at any time."],
     ["FR9", "The system shall generate and serve a PDF report for every investigation."],
-    ["FR10", "The system shall list past investigations and reopen any of them."]], [1, 9], ["center", "left"])
+    ["FR10", "The system shall list past investigations and reopen any of them."],
+    ["FR11", "The system shall run analyses as background jobs and report their stage and progress; the user can queue several files or a whole folder at once."],
+    ["FR12", "The system shall show localised heat maps for ELA and noise consistency and read the JPEG compression history of image files."],
+    ["FR13", "The user shall be able to record case notes on an investigation; the notes shall appear in its PDF report."],
+    ["FR14", "The user shall be able to delete an investigation, removing its stored original, outputs and report."]], [1, 9], ["center", "left"])
 H3("2.2.3 External Interface Requirements")
-P("**User interfaces.** A responsive browser UI with a sidebar (Overview, New Investigation, Image Forensics, Video Forensics, Reports), drag-and-drop upload, side-by-side comparisons, interactive charts and a frame filmstrip (Section 5.3.4).")
+P("**User interfaces.** A responsive browser UI with a sidebar (Overview, New Investigation, Image Forensics, Video Forensics, Reports), drag-and-drop batch upload with per-file progress, side-by-side and wipe-slider comparisons with zoom, heat maps, interactive charts, a frame filmstrip and a case-notes editor (Section 5.3.4).")
 P("**Hardware interfaces.** No special hardware. Recommended: a 64-bit multi-core CPU, 8 GB RAM and about 2 GB of free disk space for the software and evidence; no GPU is required.")
 P("**Software interfaces.** Windows 10/11, Linux or macOS; Python 3.11+ with the packages in `backend/requirements.txt`; Node.js 20+; a modern browser (Chrome, Edge or Firefox). The front end talks to the back end over HTTP/JSON at `http://127.0.0.1:8000`.")
 H3("2.2.4 Other Non-functional Requirements")
@@ -285,12 +298,13 @@ TAB("setup", "Experimental setup", ["Item", "Configuration"], [
     ["Operating system", "Windows 11"],
     ["Software", "Python 3.12.10, OpenCV 5.1, NumPy 2.2.6, scikit-image 0.26, FastAPI; Node.js 26 LTS, Next.js 15.5"],
     ["Image dataset", "CASIA v2.0 [9]: authentic (Au) and tampered (Tp) images, splicing and copy-move" + (f"; {CASIA['n']} images evaluated" if CASIA else "")],
+    ["Localisation data", "CASIA v2.0 ground-truth masks (`CASIA 2 Groundtruth`): one binary mask per tampered image" + (f"; {LOC['evaluated']:,} evaluated" if LOC else "")],
     ["Video dataset", "Synthetic benchmark: 60 clips (15 clean, 15 insertion, 15 freeze, 15 deletion), 16–25 s, 480×270, 10 fps, random pan speed 4–15 px/s, Gaussian noise σ = 2"],
     ["Execution", "Real analysis pipeline (`run_image`, `run_video`) in 10 parallel worker processes; scripts in `evaluation/`"]], [1.8, 7])
 
 H2("5.2 Experimental Analysis")
 H3("5.2.1 Data")
-P("**CASIA v2.0.** The dataset [9] contains authentic images and tampered images created by splicing (content from another image, file names beginning `Tp_D`) or copy-move (content from the same image, `Tp_S`). No cleaning or pruning was applied: every readable image in the `Au` and `Tp` folders was analysed. Features are extracted by the application's own checks; the evaluation script records, per image, the ELA peak difference, raw and geometrically consistent ORB matches, noise residual standard deviation, noise tile-variance ratio and EXIF tag count. "
+P("**CASIA v2.0.** The dataset [9] contains authentic images and tampered images created by splicing (content from another image, file names beginning `Tp_D`) or copy-move (content from the same image, `Tp_S`). No cleaning or pruning was applied: every readable image in the `Au` and `Tp` folders was analysed. Features are extracted by the application's own checks; the evaluation script records, per image, the ELA peak difference, the strongest block and share of unusual blocks in the ELA and noise heat maps, raw and geometrically consistent ORB matches and the app's copy-move flag, noise residual statistics, the estimated JPEG quality and the EXIF tag count. For localisation, the dataset's ground-truth masks mark the edited pixels of each tampered image. "
   + (f"The evaluated set contained {', '.join(f'{v} {k}' for k, v in CASIA['by_class'].items())} images." if CASIA else ""))
 P("**Format and compression imbalance.** In CASIA v2.0 the authentic images are JPEG (and a few BMP), while most tampered images are stored as uncompressed TIFF. A score that reacts to compression (such as ELA) can therefore separate the classes partly by file format. To control for this, every score is also evaluated on the JPEG files only."
   + (" The per-format counts are listed in {tab:formats}." if CASIA else "")
@@ -300,44 +314,48 @@ if CASIA:
         [[f.upper(), str(v["authentic"]), str(v["tampered"])] for f, v in CASIA["by_format"].items()], [2, 2, 2], ["center"] * 3)
 P("**Synthetic video benchmark.** Because no small, freely available, labelled video-tampering dataset exists, 60 clips were generated with a known edit time: *clean* (continuous pan), *insertion* (2–4 s of a different scene spliced in), *freeze* (one frame held for 2–4 s) and *deletion* (2–4 s of camera travel removed). Each scene has its own colour cast, random shapes and texture, and mild sensor noise so that repeated frames are not bit-identical.")
 H3("5.2.2 Performance Parameters")
-P("For images, each check produces a continuous score. Its ability to separate authentic from tampered images is summarised by the **ROC curve** and its **AUC** (0.5 = chance, 1.0 = perfect). For the application's actual decision rule (copy-move flagged when at least four geometrically consistent ORB matches are found) we report **accuracy**, **precision** = TP/(TP+FP), **recall** (TPR) = TP/(TP+FN), **false-positive rate** = FP/(FP+TN) and **F1**. For video, an edit counts as **detected** if a flag lands within one sample (1 s) of the edit's start or end; **false alarms** are flags on clean clips, reported as clips affected and flags per minute. **Processing time** per file is reported for both.")
+P("For images, each check produces a continuous score. Its ability to separate authentic from tampered images is summarised by the **ROC curve** and its **AUC** (0.5 = chance, 1.0 = perfect). For the application's actual decision rule (copy-move flagged when a consistent group of at least five ORB matches has its copy at least 40 px from the source) we report **accuracy**, **precision** = TP/(TP+FP), **recall** (TPR) = TP/(TP+FN), **false-positive rate** = FP/(FP+TN) and **F1**. For localisation, each heat map is compared with the ground-truth mask: **pixel AUC** (how well the map ranks edited pixels above unedited ones) and the **F1** and **IoU** (intersection over union) of the app's own threshold, against a baseline that marks the whole image as edited. For video, an edit counts as **detected** if a flag lands within one sample (1 s) of the edit's start or end; **false alarms** are flags on clean clips, reported as clips affected and flags per minute. **Processing time** per file is reported for both.")
 
 H2("5.3 Working of the Project")
 H3("5.3.1 Procedural Workflow")
 P("{fig:workflow} shows the end-to-end processing of one upload. The browser first checks the extension and size, then posts the file to `/api/image/analyze` or `/api/video/analyze` (the endpoint is chosen from the file type, falling back to the extension because browsers often report no MIME type for MKV and AVI). The back end streams the upload to disk in 1 MB chunks under a UUID name, aborting with HTTP 413 if it exceeds 100 MB. It then confirms that the content is really an image (Pillow) or a readable video (OpenCV), rejecting anything else with HTTP 415, and computes the SHA-256 of the stored file.")
-P("The analysis engine runs each check inside its own error handler, so a failure is recorded as `status: error` with the message while the remaining checks continue. The combined result is saved as JSON in the `investigations` table and a PDF report is generated; if PDF generation fails, the download endpoint regenerates it later. If any step fails before the record is saved, the stored file and its output folder are deleted, so no orphaned evidence remains. Finally, the JSON result is returned and the browser navigates to the report view.")
+P("The upload is sent with `?background=true`: the request returns at once with a job id, and the analysis runs in a small thread pool (two jobs at a time). The browser shows the real upload progress and then polls `/api/jobs/{id}`, which reports the current stage (for example *Copy-move detection* or *Estimating motion*) and a percentage. Each check runs inside its own error handler, so a failure is recorded as `status: error` with the message while the remaining checks continue. The combined result is saved as JSON in the `investigations` table and a PDF report is generated; if PDF generation fails, the download endpoint regenerates it later. If any step fails before the record is saved, the stored file and its output folder are deleted, so no orphaned evidence remains. When several files are queued, each follows the same path and gets its own progress bar and result link.")
 FIGR("workflow", "fig_workflow.png", 5.6, "Procedural workflow for one investigation")
 
 H3("5.3.2 Algorithmic Approaches Used")
-P("**(a) Error Level Analysis.** Let *I* be the image converted to RGB and *J* the same image after saving as JPEG at quality *q* = 90. The ELA map is *E* = |*I* − *J*| per channel, scaled by 255/max(*E*) so that the strongest difference is white. Regions that were compressed differently from their surroundings respond differently to recompression.")
+P("**(a) Error Level Analysis and its heat map.** Let *I* be the image converted to RGB and *J* the same image after saving as JPEG at quality *q* = 90. The ELA image is *E* = |*I* − *J*| per channel, scaled by 255/max(*E*) so that the strongest difference is white. Because the global peak mostly reflects how the whole file was last saved (Section 5.5.1), a localised map is also computed: the per-pixel maximum of *E* over the channels is averaged over 16 × 16 blocks, and each block mean *b* is converted to a robust z-score *z* = (*b* − median)/(1.4826 · MAD) relative to the other blocks of the same image. Blocks with *z* ≥ 3.5 are reported as unusual and the map is drawn as a colour overlay on the photo.")
 OL(["Convert the input to RGB and save a JPEG copy at quality 90.",
     "Compute the absolute per-pixel difference between the original and the copy.",
     "Find the peak difference *p* over all channels and brighten the difference image by 255/*p*.",
-    "Return the visualisation, *p* and the per-channel ranges."])
-P("**(b) Copy-move detection with ORB and RANSAC.** Up to 2,500 ORB keypoints are detected on the greyscale image. Each descriptor is matched against all descriptors of the same image (Hamming distance, *k* = 3 nearest neighbours). After removing the trivial self-match, a match is kept if it passes Lowe's ratio test (best < 0.78 × second best) and its two keypoints are at least 24 px apart. If four or more matches remain, a partial affine transformation is estimated with RANSAC (reprojection threshold 4 px) and only inliers, matches that agree on one common shift, rotation and scale, are kept. Four or more consistent matches raise a candidate indicator.")
+    "Return the visualisation, *p* and the per-channel ranges.",
+    "Average max(*E*) over 16 × 16 blocks, convert to robust z-scores and draw the heat map; report the strongest *z* and the share of blocks with *z* ≥ 3.5."])
+P("**(b) Copy-move detection with ORB and RANSAC.** Up to 2,500 ORB keypoints are detected on the greyscale image. Each descriptor is matched against all descriptors of the same image (Hamming distance, *k* = 3 nearest neighbours). After removing the trivial self-match, a match is kept if it passes Lowe's ratio test (best < 0.78 × second best) and its two keypoints are at least 24 px apart. Each pair is then oriented the same way and duplicates are removed, because a copied region is matched in both directions (A→B and B→A). Partial affine transformations are found with repeated RANSAC (reprojection threshold 4 px): the largest group of matches that agree on one shift, rotation and scale is kept, its inliers are removed and the search repeats. The image is flagged when the largest group has at least 5 matches and the copy lies at least 40 px from its source; these two thresholds were chosen on one half of CASIA v2.0 and tested on the other (Section 5.5.4).")
 OL(["*kp*, *d* ← ORB(gray, 2500)",
     "for each descriptor *d*ᵢ: find 3 nearest neighbours in *d*; drop the neighbour equal to *i*",
-    "keep (*i*, *j*) if dist₁ < 0.78·dist₂ and ‖*kp*ᵢ − *kp*ⱼ‖ ≥ 24",
-    "if |matches| ≥ 4: *M*, inliers ← RANSAC-affine(points_i, points_j, 4.0); matches ← inliers",
-    "flag ← |matches| ≥ 4; draw matches between the two copies of the image"])
-P("**(c) Noise-residual analysis.** The residual *R* = |*I* − *G*₃ₓ₃ ∗ *I*| keeps fine texture and sensor noise. The image is divided into an 8 × 8 grid and the variance of *R* is computed in each tile. The ratio of the largest to the smallest tile variance summarises how uneven the noise is; the residual image itself is shown so the user can see *where* it differs.")
+    "keep (*i*, *j*) if dist₁ < 0.78·dist₂ and ‖*kp*ᵢ − *kp*ⱼ‖ ≥ 24; orient each pair and remove duplicates",
+    "repeat: *M*, inliers ← RANSAC-affine(points_a, points_b, 4.0); groups ← groups + inliers; remove inliers",
+    "*G* ← largest group; shift ← median ‖*b* − *a*‖ over *G*",
+    "flag ← |*G*| ≥ 5 and shift ≥ 40 px; draw the group's matches on the image"])
+P("**(c) Noise consistency.** The residual *R* = |*I* − *G*₃ₓ₃ ∗ *I*| keeps fine texture and sensor noise and is shown as an image. For the heat map, the local noise level of each 16 × 16 block is estimated with the robust wavelet estimator σ = median(|HH|)/0.6745, where HH is the finest diagonal Haar detail band [7]; log σ is converted to a robust z-score across the blocks of the image, and blocks with |*z*| ≥ 3.5 (much smoother or much noisier than the rest) are highlighted.")
 P("**(d) Histogram and metadata.** 256-bin histograms of the three colour channels reveal clipping and the comb-like gaps typical of contrast adjustments; EXIF tags (camera, software, dates) are read with Pillow.")
-P("**(e) Repeated-frame detection.** A 64-bit perceptual hash (pHash, based on the low-frequency DCT of a reduced greyscale frame [13]) is computed for each sampled frame. Neighbouring frames whose Hamming distance is at most 4 are reported as exact (distance 0) or near repeats.")
+P("**(h) Compression history.** For JPEG files, the luminance quantization table is compared with the standard IJG table scaled to every quality from 1 to 100; the closest gives the estimated quality, and an almost exact match indicates standard (software-written) tables rather than a camera's custom tables. Chroma subsampling and progressive encoding are also reported. This describes how the file was last saved, not whether it was edited.")
+P("**(e) Repeated-frame detection.** A 64-bit perceptual hash (pHash, based on the low-frequency DCT of a reduced greyscale frame [13]) is computed for each sampled frame. Neighbouring frames whose Hamming distance is at most 4 are candidate repeats. Because pHash deliberately tolerates small shifts, a slowly panning camera also produces such pairs, so a candidate is kept only if the optical flow between the two samples (step g) has a mean motion of at most 1 px. Confirmed pairs are reported as exact (distance 0) or near repeats.")
 P("**(f) SSIM and scene-change detection.** SSIM [10] between neighbouring greyscale samples gives a continuity score in [−1, 1]. Independently, an 8 × 8 × 8 colour histogram is computed per frame; a Bhattacharyya distance of 0.55 or more to the previous frame marks a scene-change candidate.")
 P("**(g) Optical flow with robust spike detection.** For each pair of neighbouring samples, both frames are resized to 480 px width and Farnebäck dense flow [11] is computed (pyramid scale 0.5, 3 levels, window 15, 3 iterations, polynomial neighbourhood 5, σ 1.2). The per-pixel magnitude is divided by the resize factor so it is expressed in original pixels, and the mean and 95th percentile are recorded. With *m*ₖ the mean motion of pair *k*, the median *m̃* and MAD = 1.4826 · median|*m*ₖ − *m̃*| are computed, and pair *k* is a **motion spike** if (*m*ₖ − *m̃*)/MAD ≥ 3.5 and *m*ₖ ≥ 1 px (at least four pairs are required). Using the median and MAD instead of the mean and standard deviation keeps one large spike from masking another. Each pair's flow is rendered in HSV (hue = direction, value = speed, saturating at 8 analysed pixels) so that motion images are comparable.")
 
 H3("5.3.3 Project Deployment")
-P("ImageGuard is deployed on a single machine ({fig:deploy}). The back end runs in a Python virtual environment under Uvicorn on `127.0.0.1:8000` and the front end runs under Node.js on port 3000. The browser loads pages from the Next.js server and calls the API directly; CORS permits only the local front-end origin. Installation consists of creating the virtual environment, installing `backend/requirements.txt`, running `npm install` in `frontend/` and starting both servers, as documented in the README.")
+P("ImageGuard is deployed on a single machine ({fig:deploy}). The back end runs in a Python virtual environment under Uvicorn on `127.0.0.1:8000` and the front end runs under Node.js on port 3000. The browser loads pages from the Next.js server and calls the API directly; CORS permits only the local front-end origin. Installation consists of creating the virtual environment, installing `backend/requirements.txt` and running `npm install` in `frontend/`, as documented in the README. Afterwards, `start.ps1` starts both servers in the background (writing their output to `logs/`), waits until they answer and opens the browser; `start.ps1 -Stop` stops them.")
 FIGR("deploy", "fig_deployment.png", 6.4, "Deployment diagram")
 
 H3("5.3.4 System Screenshots")
 for key, file, cap in [("shot_overview", "overview.png", "Overview dashboard"),
-                       ("shot_upload", "investigation.png", "New investigation (evidence intake)"),
-                       ("shot_image", "image_analysis.png", "Image forensics page: summary metrics and side-by-side ELA comparison"),
+                       ("shot_upload", "investigation.png", "New investigation: batch analysis with per-file progress and result links"),
+                       ("shot_image", "image_analysis.png", "Image forensics page: summary metrics and the ELA heat map beside the original"),
+                       ("shot_slider", "image_slider.png", "Image forensics page: wipe slider over the copy-move matches"),
                        ("shot_image_cards", "image_cards.png", "Image forensics page: per-technique cards with interpretation guidance"),
                        ("shot_video", "video_analysis.png", "Video forensics page: synchronised SSIM and motion timelines"),
                        ("shot_video_frames", "video_frames.png", "Video forensics page: frame filmstrip, previous/selected/flow comparison and flagged moments"),
-                       ("shot_reports", "reports.png", "Reports and investigation history")]:
+                       ("shot_reports", "reports.png", "Reports page: history, integrity check, delete and case notes")]:
     FIGR(key, f"../screenshots/{file}", 6.4, cap)
 
 H2("5.4 Testing Process")
@@ -346,13 +364,14 @@ P("Testing was carried out at three levels: automated unit tests for every algor
 H3("5.4.2 Features to be Tested")
 UL(["Upload validation (type, size, content) and evidence integrity (hashing and verification).",
     "Each image check and each video check, including failure isolation.",
-    "Result persistence, PDF generation and artefact serving.",
-    "Front-end pages: upload, analysis views, comparisons, charts, frame selection, history and error states."])
+    "Result persistence, PDF generation and artefact serving; background jobs, notes and deletion.",
+    "Front-end pages: batch upload and progress, analysis views, comparisons, slider and zoom, charts, frame selection, notes, delete, history and error states."])
 H3("5.4.3 Test Strategy")
 P("Algorithms were tested in isolation on synthetic inputs whose correct answer is known (a uniform image, a frame sequence shifted by a known number of pixels, an image with a pasted patch). The integrated system was then exercised end to end through the API with generated images and videos, and the UI was checked against those investigations in a browser. Regression tests were added whenever a defect was found.")
 H3("5.4.4 Test Techniques")
 UL(["**Black-box testing** of API endpoints with valid, invalid and boundary inputs.",
     "**White-box unit testing** of algorithm functions with controlled inputs (pytest).",
+    "**End-to-end API testing** with FastAPI's test client against a temporary data folder, so the real database is never touched.",
     "**Regression testing**: tests added for each defect found (copy-move array types, SHA-256 expected value, optical-flow accuracy and scale).",
     "**Static analysis**: TypeScript type checking and ESLint on the front end."])
 H3("5.4.5 Test Cases")
@@ -371,10 +390,21 @@ TAB("tests", "Test cases", ["ID", "Test case", "Input", "Expected result", "Resu
     ["T12", "API: video end to end", "20 s clip with a whip pan and a cut", "200; 19 flow pairs; spikes at 8 s and 15 s", "Pass"],
     ["T13", "API: fake image", "`not an image` named `x.jpg`", "HTTP 415, nothing stored", "Pass"],
     ["T14", "UI: upload with empty MIME type", ".mkv file reported with no type", "Routed to the video endpoint and analysed", "Pass"],
-    ["T15", "UI: failed check display", "Investigation with a failed check", "Card shows an error badge and message; others shown", "Pass"]],
+    ["T15", "UI: failed check display", "Investigation with a failed check", "Card shows an error badge and message; others shown", "Pass"],
+    ["T16", "Compression history", "Images saved at JPEG quality 60, 75 and 92; a PNG", "Quality estimated exactly; standard tables; PNG reported as not JPEG", "Pass"],
+    ["T17", "ELA heat map", "Image compressed at 70 with an uncompressed pasted patch", "Strongest block lies inside the patch", "Pass"],
+    ["T18", "Noise heat map", "Image with a much noisier pasted region", "Strongest block inside the region; < 20% of blocks unusual", "Pass"],
+    ["T19", "Motion-confirmed repeats", "One similar pair moving 6.5 px, one still pair", "Only the still pair is kept", "Pass"],
+    ["T20", "Integrity violation", "Stored original changed after intake", "Verification reports the change", "Pass"],
+    ["T21", "Case notes", "Notes saved; then 10,001 characters", "Saved, listed, in the PDF; over-long notes rejected (422)", "Pass"],
+    ["T22", "Delete", "Delete an investigation twice", "Record, original, outputs and report removed; second delete 404", "Pass"],
+    ["T23", "Background job", "Upload with `?background=true`", "202 with a job id; job reaches done at 100%", "Pass"],
+    ["T24", "Upload limits", "Empty, wrong-type, fake and oversized uploads", "400 / 415 / 415 / 413; nothing left on disk", "Pass"],
+    ["T25", "UI: batch of four files", "Two images, a video and a text file", "Text file rejected; three analysed two at a time with stages shown", "Pass"],
+    ["T26", "UI: slider, zoom, notes, delete", "Image investigation in the browser", "Wipe and 4× zoom work; Escape closes; notes saved; delete removes it", "Pass"]],
     [0.6, 2, 2.4, 3, 0.8], ["center", "left", "left", "left", "center"])
 H3("5.4.6 Test Results")
-P("All 10 automated tests pass (`pytest`, about 2.5 s) and all manual system and UI tests in {tab:tests} passed. Testing found and fixed four defects before release: the copy-move check always failed because point lists were not passed to OpenCV as NumPy arrays; a dependency (Matplotlib) was missing from the requirements; a test asserted an incorrect SHA-256 value; and the reports page could not be pre-rendered without a React Suspense boundary. A further UI defect (a wide frame filmstrip stretching the page) was found during browser testing and fixed.")
+P("All 26 automated tests pass (`pytest`, about 17 s, including 12 end-to-end API tests) and all manual system and UI tests in {tab:tests} passed. In the first iteration, testing found and fixed four defects: the copy-move check always failed because point lists were not passed to OpenCV as NumPy arrays; a dependency (Matplotlib) was missing from the requirements; a test asserted an incorrect SHA-256 value; and the reports page could not be pre-rendered without a React Suspense boundary. In the second iteration, browser testing found that the zoom dialog ignored the Escape key and that the start script gave no way to see why a server failed (both fixed), and checking the generated PDF text showed that the built-in PDF fonts could not draw symbols such as ≈ and •, which are now replaced by plain equivalents.")
 
 H2("5.5 Results and Discussions")
 H3("5.5.1 Image forensics on CASIA v2.0")
@@ -397,6 +427,16 @@ if CASIA:
         s = CASIA["seconds"]
         P(f"Processing took {s['mean']:.2f} s per image on average (median {s['median']:.2f} s, 95th percentile {s['p95']:.2f} s) per worker process, including writing all visualisations, which meets the performance requirement of Section 2.2.4.")
     B.append(("casia_discussion",))
+    if LOC:
+        P("**Localisation against the ground-truth masks.** {tab:loc} compares each map with the edited pixels of every tampered image that has a matching mask.")
+        TAB("loc", "Pixel-level localisation on CASIA v2.0 tampered images", ["Images", "Method", "Pixel AUC", "F1", "IoU"],
+            [row for kind, v in LOC["by_type"].items() for row in (
+                [f"{kind} ({v['images']:,})", "ELA heat map", f"{v['ela']['pixel_auc']:.3f}", f"{v['ela']['f1']:.3f}", f"{v['ela']['iou']:.3f}"],
+                ["", "Noise heat map", f"{v['noise']['pixel_auc']:.3f}", f"{v['noise']['f1']:.3f}", f"{v['noise']['iou']:.3f}"],
+                ["", f"Copy-move regions (flagged {pct(v['copy_move']['flagged_share'])})", "–", f"{v['copy_move']['f1_all']:.3f}", f"{v['copy_move']['iou_all']:.3f}"],
+                ["", "Baseline: whole image marked", "0.500", f"{v['baseline_f1']:.3f}", "–"])],
+            [1.9, 3.1, 1.2, 1, 1], ["left", "left", "center", "center", "center"])
+        B.append(("localization_discussion",))
 else:
     P("*[Pending: the CASIA v2.0 results (ROC curves, AUC per score, confusion statistics at the app's decision rule, breakdown by manipulation type and processing time) are inserted here when the evaluation script has been run on the dataset.]*")
 
@@ -411,11 +451,13 @@ if VIDEO:
     TAB("falsealarm", "False alarms on 15 clean clips", ["Check", "Clips with any flag", "Flags per minute"],
         [[k, f"{v['clips_with_any_flag']}/{v['clips']}", f"{v['flags_per_minute']:.2f}" if "flags_per_minute" in v else "–"] for k, v in fa.items()],
         [2, 2, 2], ["left", "center", "center"])
-    P(f"Scene-change detection caught {pk['insertion']['detected_by_expected_check']} of 15 insertions with **no** false alarms, and the optical-flow spike test caught {pk['deletion']['detected_by_expected_check']} of 15 deletions at {fa['motion']['flags_per_minute']:.1f} false flags per minute. The repeated-frame check flagged every freeze, but it also raised {fa['repeat']['flags_per_minute']:.1f} flags per minute on clean clips: because pHash is designed to tolerate small shifts, a camera panning a few pixels per second looks like a repeated frame. Its detections are therefore not informative on moving footage, and this is reported in the interface's caveats and in Future Work. Processing averaged {VIDEO['processing_seconds']['mean']:.2f} s per 16–25 s clip.")
+    P(f"Scene-change detection caught {pk['insertion']['detected_by_expected_check']} of 15 insertions with **no** false alarms, and the optical-flow spike test caught {pk['deletion']['detected_by_expected_check']} of 15 deletions at {fa['motion']['flags_per_minute']:.1f} false flags per minute. The repeated-frame check caught all {pk['freeze']['detected_by_expected_check']} freezes with {fa['repeat']['flags_per_minute']:.1f} false flags per minute on clean clips. In the first version it raised {BEFORE['repeat_fpm']:.1f} false flags per minute (on {BEFORE['repeat_clips']} clean clips), because pHash is designed to tolerate small shifts and a camera panning a few pixels per second looks repeated to it; requiring near-zero optical-flow motion as well removed these without losing a single freeze (Section 5.5.4). Processing averaged {VIDEO['processing_seconds']['mean']:.2f} s per 16–25 s clip.")
 P("**Accuracy of the motion estimate.** During development a 20-second test clip with a steady 10 px/s pan measured a median of 9.4 px between samples, but a whip pan of about 75 px between two samples was measured as only 15.5 px. Farnebäck flow underestimates displacements larger than roughly 20 analysed pixels, so with one-second sampling, fast motion is under-reported. It still stood out as the largest spike, which is what the check needs, and the limitation is stated in the results.")
 
+B.append(("improvements",))
+
 H3("5.5.3 Comparison with related work")
-P("Deep-learning detectors such as MFCN [21] and ManTra-Net [22] localise splicing at pixel level after training on large datasets and typically need a GPU, while keypoint copy-move methods [3][4] remain the standard training-free approach. ImageGuard sits with the latter: it needs no training data, runs on a CPU in about a second per image, and explains each observation, at the cost of lower sensitivity to splicing. Unlike most published evaluations, the CASIA results here are also reported on JPEG files alone and set against the measured JPEG save settings of each class, which shows that a compression-based score's apparent accuracy on this benchmark largely reflects how the dataset was built (Section 5.2.1).")
+P("Deep-learning detectors such as MFCN [21] and ManTra-Net [22] localise splicing at pixel level after training on large datasets and typically need a GPU, while keypoint copy-move methods [3][4] remain the standard training-free approach. ImageGuard sits with the latter: it needs no training data, runs on a CPU in about a second per image, and explains each observation, at the cost of lower sensitivity to splicing. Its ELA heat map does localise edits better than chance (Section 5.5.1), though far below what trained networks report. Unlike most published evaluations, the CASIA results here are also reported on JPEG files alone and set against the measured JPEG save settings of each class, which shows that a compression-based score's apparent accuracy on this benchmark largely reflects how the dataset was built (Section 5.2.1).")
 
 H2("5.6 Inferences Drawn")
 B.append(("inferences",))
@@ -423,28 +465,28 @@ B.append(("inferences",))
 H2("5.7 Validation of Objectives")
 TAB("validate", "Validation of objectives", ["Objective", "Status", "Evidence"], [
     ["1. Local application with integrity preservation", "Met", "UUID storage, SHA-256 at intake, verify endpoint (T1, T2, T11)"],
-    ["2. Explainable image checks", "Met", "Five checks implemented and tested (T3–T5, T11); CASIA evaluation"],
-    ["3. Video checks", "Met", "Four checks including full-video optical flow (T6–T9, T12); video benchmark"],
-    ["4. Visualisation, caveats and PDF reports", "Met", "Analysis pages (Section 5.3.4); PDF per investigation (T10)"],
+    ["2. Explainable image checks", "Met", "Six checks incl. ELA and noise heat maps and compression history (T3–T5, T11, T16–T18); CASIA image- and pixel-level evaluation"],
+    ["3. Video checks", "Met", "Four checks incl. full-video optical flow and motion-confirmed repeats (T6–T9, T12, T19); video benchmark"],
+    ["4. Visualisation, caveats and PDF reports", "Met", "Analysis pages with slider, zoom and notes (Section 5.3.4, T25–T26); readable PDF per investigation (T10, T21)"],
     ["5. Quantitative, honest evaluation", "Met" if CASIA else "Partly met", "CASIA v2.0 ROC/AUC with JPEG-only and save-setting controls; synthetic video benchmark with false-alarm rates" if CASIA else "Video benchmark complete; CASIA evaluation pending"]],
     [3.2, 1.2, 4.6], ["left", "center", "left"])
 
 # ----------------------------------------------------------------------- Chapter 6
 H1("CHAPTER 6: CONCLUSIONS AND FUTURE DIRECTIONS")
 H2("6.1 Conclusions")
-P("ImageGuard shows that a set of classical image and video processing techniques can be combined into a practical, private and explainable screening tool that runs on an ordinary laptop. The system preserves evidence and makes its integrity verifiable, and it presents every observation with a visualisation and its limitations instead of a verdict. The evaluation showed that ORB copy-move detection responds to its intended manipulation, but at about a 10% false-alarm rate, so its flags need visual confirmation. On the video benchmark, colour-histogram scene detection and robust motion-spike detection located inserted and deleted segments reliably. It also showed that two techniques can look effective while measuring the wrong thing: a global ELA score on a dataset whose classes were saved with different JPEG settings, and pHash repeat detection on panning footage. Making these failure modes visible is itself a central result of the project.")
+P("ImageGuard shows that a set of classical image and video processing techniques can be combined into a practical, private and explainable screening tool that runs on an ordinary laptop. The system preserves evidence and makes its integrity verifiable, and it presents every observation with a visualisation and its limitations instead of a verdict. The first evaluation showed that two techniques can look effective while measuring the wrong thing: a global ELA score on a dataset whose classes were saved with different JPEG settings, and pHash repeat detection on panning footage. The second iteration acted on those findings and measured the result: the localised ELA heat map points at edited pixels (pixel AUC about 0.79 against the ground-truth masks), motion-confirmed repeat detection kept every frozen segment while removing all false repeat alarms on clean clips, and a copy-move rule tuned on held-out data more than halved its false alarms at a stated cost in recall. Colour-histogram scene detection and robust motion-spike detection locate inserted and deleted video segments reliably. The noise heat map, on the other hand, did not localise edits on CASIA. Measuring both successes and failures in this way is itself a central result of the project.")
 H2("6.2 Environmental, Economic and Societal Benefits")
 UL(["**Societal:** helps teachers, journalists and investigators question manipulated media before acting on it, supporting fairer decisions and reducing the spread of misinformation; local processing protects the privacy of people who appear in evidence.",
     "**Economic:** uses only free, open-source software and ordinary hardware, so schools, newsrooms and small organisations can use it at no licence cost.",
     "**Environmental:** CPU-only, training-free techniques avoid the energy cost of training and running large neural networks and of uploading media to data centres."])
 H2("6.3 Reflections")
-P("The most valuable lesson was that evaluation must be designed as carefully as the algorithms. Building the evaluation harnesses changed our view of several checks: the repeated-frame detector looked perfect until it was run on clean clips, and ELA's high AUC on CASIA v2.0 turned out to be largely explained by the dataset's JPEG save settings once these were measured. We also learned the practical value of isolating failures (one broken check no longer breaks an investigation), of testing algorithms on inputs with known answers, and of writing interpretation text alongside each feature rather than at the end.")
+P("The most valuable lesson was that evaluation must be designed as carefully as the algorithms. Building the evaluation harnesses changed our view of several checks: the repeated-frame detector looked perfect until it was run on clean clips, and ELA's high AUC on CASIA v2.0 turned out to be largely explained by the dataset's JPEG save settings once these were measured. Acting on those measurements, rather than tuning by eye, is what produced the improvements of the second iteration; choosing thresholds on one half of the data and reporting on the other kept those improvements honest. We also learned the practical value of isolating failures (one broken check no longer breaks an investigation), of testing algorithms on inputs with known answers, and of writing interpretation text alongside each feature rather than at the end.")
 H2("6.4 Future Work")
-UL(["Replace the global ELA peak with a localised measure (ELA or JPEG-ghost statistics per block, compared with the image's own background) so that it responds to edited regions rather than to how the whole file was saved, and evaluate it with JPEG quality controlled.",
-    "Make the repeated-frame check motion-aware: report a repeat only when the optical flow between the two samples is also near zero, removing most false alarms on panning footage.",
-    "Add region-level localisation of splicing by combining local ELA, noise statistics and JPEG ghost analysis into a heat map.",
+UL(["Improve localisation further with JPEG-ghost and double-quantisation analysis and by normalising the ELA map for local texture, and evaluate on further datasets with masks.",
+    "Replace the noise heat map's estimator with one that is robust to JPEG smoothing (for example, residuals of a denoising filter), since the current map does not localise edits on CASIA.",
+    "Recover the copy-move recall lost to the stricter rule, for example with SIFT features or block matching for small, low-texture copies.",
     "Sample video adaptively (denser around SSIM dips or motion spikes) and analyse audio continuity.",
-    "Process long videos in a background job queue with real upload and analysis progress.",
+    "Persist background jobs across restarts and add user accounts for multi-investigator use.",
     "Add camera-model checks based on sensor noise (PRNU) [8] and optional, clearly labelled deep-learning detectors for comparison.",
     "Evaluate on further datasets (Columbia, CoMoFoD, MICC-F220) and on real tampered videos."])
 
@@ -455,7 +497,8 @@ UL(["**Platform issues:** Windows Smart App Control intermittently blocked compi
     "**Library behaviour:** OpenCV's newer Python bindings reject plain Python lists for point sets, which silently disabled copy-move detection until a regression test exposed it.",
     "**Motion estimation at one sample per second:** large displacements are underestimated by dense flow; the spike test had to rely on relative rather than absolute motion.",
     "**Dataset bias:** CASIA v2.0's authentic and tampered images differ in file format and JPEG save settings, which required JPEG-only and quantization-table analyses to interpret the ELA results fairly.",
-    "**No public video ground truth:** a synthetic benchmark with controlled edits had to be designed."])
+    "**No public video ground truth:** a synthetic benchmark with controlled edits had to be designed.",
+    "**Avoiding over-fitting:** improving the copy-move rule on the same data used to report it would overstate the gain, so rules were chosen on one half of CASIA and reported on the other; an extra feature that looked promising (spatial compactness) was rejected because it did not help on the tuning half."])
 H2("7.2 Relevant Subjects")
 TAB("subjects", "Relevant subjects", ["Subject", "Concepts applied"], [
     ["Image and Video Processing", "JPEG compression, filtering, histograms, feature detection (ORB), geometric transforms (RANSAC), SSIM, optical flow, frame sampling"],
@@ -471,7 +514,7 @@ H2("7.4 Work Schedule")
 P("{fig:gantt} shows the schedule followed during the semester, from the literature survey through implementation and evaluation to documentation.")
 FIGR("gantt", "fig_gantt.png", 6.5, "Work schedule")
 H2("7.5 Brief Analytical Assessment")
-P("Technically, the project delivered a complete, tested system whose components are each grounded in published methods and whose behaviour has been measured rather than assumed. The strongest components are evidence handling, scene-change detection and full-video motion analysis. Copy-move detection works for its intended manipulation but needs visual confirmation of its flags. The weakest are the whole-image noise statistics and repeated-frame detection on moving footage. Splicing remains hard to detect without learned models, and the global ELA score's benchmark accuracy reflects the dataset's compression settings more than the edits. The evaluation framework is reusable, so improvements such as the motion-aware repeat check proposed in Section 6.4 can be measured on the same data. Overall, the project met its objectives and demonstrates the value of explainability and honest evaluation in forensic tooling.")
+P("Technically, the project delivered a complete, tested system whose components are each grounded in published methods and whose behaviour has been measured rather than assumed. The strongest components are evidence handling, scene-change detection, full-video motion analysis, motion-confirmed repeat detection and the ELA heat map. Copy-move detection works for its intended manipulation and, after re-tuning, raises about one false alarm in twenty authentic images, but it misses small copies. The weakest is the noise heat map, which did not localise edits on CASIA. Splicing remains hard to detect without learned models. Because the evaluation framework is reusable, every change in the second iteration was measured on the same data rather than assumed. Overall, the project met its objectives and demonstrates the value of explainability and honest evaluation in forensic tooling.")
 
 REFERENCES = [
     "Fridrich J., Soukal D., Lukáš J. “Detection of copy-move forgery in digital images.” In Proceedings of the Digital Forensic Research Workshop (DFRWS), 2003.",
@@ -510,13 +553,53 @@ def casia_discussion() -> list[tuple]:
                  + (f"{pct(JQ['tampered']['most_common_quality'][0]['share'])} of tampered JPEGs share one quantization table (quality ≈ {JQ['tampered']['most_common_quality'][0]['quality']:.0f}) and their median ELA peak is "
                     f"{JQ['tampered']['ela_peak_median']:.0f}, against {JQ['authentic']['ela_peak_median']:.0f} for authentic JPEGs saved mostly at quality ≈ {JQ['authentic']['most_common_quality'][0]['quality']:.0f} or ≈ {JQ['authentic']['most_common_quality'][1]['quality']:.0f}. " if JQ else "")
                  + "A global ELA peak therefore largely measures how a file was last compressed, which in CASIA v2.0 differs systematically between the classes. It is useful evidence that a file has been re-saved or processed, but on real evidence it cannot by itself show that, or where, content was altered, which is why ImageGuard presents ELA as a map to inspect rather than as a verdict.")]
-    out.append(("p", f"**Copy-move detection works for its intended manipulation, with a real false-alarm cost.** The ORB score's AUC is {cmv['orb_auc']:.3f} on copy-move forgeries but only {spl['orb_auc']:.3f} "
+    out.append(("p", f"**Copy-move detection works for its intended manipulation.** The ORB score's AUC is {cmv['orb_auc']:.3f} on copy-move forgeries but only {spl['orb_auc']:.3f} "
                      f"(chance level) on splicing, as expected for a method that looks for content repeated within one image. At the app's rule ({a['rule']}) it flags {pct(cmv['recall'])} of copy-move forgeries "
-                     f"and {pct(a['fpr'])} of authentic images ({a['fp']} of {a['fp'] + a['tn']}). The false alarms come from natural repetition (windows, foliage, textures) that also produces geometrically consistent matches, "
-                     "and the misses come from small or low-texture copied regions that yield too few keypoints. Youden's J also picks a threshold of 4 consistent matches, so the app's threshold sits at the best trade-off for this score."))
+                     f"and {pct(a['fpr'])} of authentic images ({a['fp']} of {a['fp'] + a['tn']}), with precision {a['precision']:.2f} over all tampered images. The remaining false alarms come from natural repetition (windows, foliage, textures) that also produces geometrically consistent matches, "
+                     "and the misses come from small or low-texture copied regions that yield too few keypoints."))
+    for key, label in (("ELA heat map: strongest block", "ELA heat map"), ("Noise heat map: strongest block", "noise heat map")):
+        if key in s:
+            out.append(("p", f"**Image-level scores from the {label}.** The strongest block reaches an AUC of {s[key]['auc']:.3f} on all images"
+                        + (f" and {jo[key]:.3f} on JPEG files alone" if key in jo else "") + ". "
+                        + ("A single strongest block mixes edited regions with ordinary edges and texture, so the map is more useful for pointing at regions (below) than as an image-level score."
+                           if s[key]["auc"] < 0.8 else "")))
     out.append(("p", f"**The noise summaries do not separate the classes.** The tile-variance ratio ({s['Noise tile variance ratio']['auc']:.3f}) and residual standard deviation ({s['Noise residual std']['auc']:.3f}) are at or slightly below chance. "
                      "A single number for the whole image is dominated by scene content (sky versus foliage), so these measurements are only informative when the residual map is inspected locally, as the interface does."))
     return out
+
+
+def localization_discussion() -> list[tuple]:
+    a = LOC["by_type"]["all"]
+    cmv = LOC["by_type"].get("copy-move", a)
+    return [("p", f"The **ELA heat map localises edits**: across {LOC['evaluated']:,} tampered images it ranks edited pixels above unedited ones with a pixel AUC of {a['ela']['pixel_auc']:.3f} "
+                  f"(0.5 would be chance), and its thresholded map reaches an F1 of {a['ela']['f1']:.3f} against {a['baseline_f1']:.3f} for marking the whole image. This is a modest localisation, far from what trained networks report, "
+                  "but it is real, and unlike the global ELA peak it compares regions within one image, so it is not explained by the dataset's per-class save settings. "
+                  f"The **noise heat map does not localise edits** on CASIA (pixel AUC {a['noise']['pixel_auc']:.3f}): JPEG compression smooths away much of the sensor noise the estimator relies on, so this map is presented with that caveat. "
+                  f"Copy-move regions overlap the mask only for the {pct(cmv['copy_move']['flagged_share'])} of copy-move images the app flags, giving a low average F1 ({cmv['copy_move']['f1_all']:.3f}); "
+                  + (f"where it flags, F1 is {cmv['copy_move']['f1_when_flagged']:.3f}. " if cmv['copy_move'].get('f1_when_flagged') is not None else "")
+                  + (f"{LOC['skipped'].get('mask size differs from image', 0)} masks whose size did not match their image were skipped rather than stretched." if LOC.get("skipped") else ""))]
+
+
+def improvements() -> list[tuple]:
+    """Section 5.5.4: what the second iteration changed, measured on the same benchmarks."""
+    rows = []
+    if CMT:
+        p, c = CMT["test"]["previous_rule"], CMT["test"]["chosen"]
+        rows.append(["Copy-move false alarms (held-out half of CASIA)", f"{pct(p['fpr'])} of authentic images", f"{pct(c['fpr'])}", f"precision {p['precision']:.2f} → {c['precision']:.2f}; recall {p['recall']:.2f} → {c['recall']:.2f}"])
+    if VIDEO:
+        fa = VIDEO["false_alarms"]["repeat"]; fr = VIDEO["per_kind"]["freeze"]
+        rows.append(["Repeated-frame false alarms (15 clean clips)", f"{BEFORE['repeat_fpm']:.1f} per minute ({BEFORE['repeat_clips']} clips)", f"{fa['flags_per_minute']:.1f} per minute ({fa['clips_with_any_flag']}/{fa['clips']} clips)", f"frozen segments caught {fr['detected_by_expected_check']}/{fr['clips']} (unchanged)"])
+    if LOC:
+        rows.append(["Localisation of edits (pixel AUC, ELA)", "not available (global peak only)", f"{LOC['by_type']['all']['ela']['pixel_auc']:.3f}", f"{LOC['evaluated']:,} ground-truth masks"])
+    rows += [["Analysis feedback", "simulated progress bar", "real stage and percentage", "background jobs, two at a time"],
+             ["Files per upload", "one", "many files or a whole folder", "per-file progress and result links"],
+             ["PDF report", "raw data dump", "readable sections, images, notes", "regenerated for older investigations"],
+             ["Automated tests", "10", "26", "12 end-to-end API tests"]]
+    return [("h3", "5.5.4 Improvements after the first evaluation"),
+            ("p", "The first evaluation exposed specific weaknesses, so a second iteration addressed them and re-measured each change on the same benchmarks. Thresholds were chosen on one half of CASIA and reported on the other, so the gains are not fitted to the test data. A rule based on the spatial compactness of the copy-move group was also tried and rejected, because it did not improve the trade-off on the tuning half. {tab:improve} summarises the changes."),
+            ("table", "improve", "Changes in the second iteration, measured on the same benchmarks", ["Aspect", "First version", "Improved version", "Notes"], rows,
+             [2.6, 2.0, 2.0, 2.6], ["left", "left", "left", "left"]),
+            ("p", "The copy-move change is a trade-off rather than a free gain: the best-balanced rule by Youden's J was the original one, so the stricter rule was chosen deliberately for fewer false alarms, which suits a tool whose flags each cost an investigator's time.")]
 
 
 def inferences() -> list[tuple]:
@@ -524,15 +607,15 @@ def inferences() -> list[tuple]:
     if CASIA:
         a, cmv = CASIA["app_threshold"], CASIA["by_type"]["copy-move"]
         items.append("A high score on a benchmark can come from how the dataset was built: ELA's AUC on CASIA v2.0 is largely explained by systematic JPEG save-setting differences between classes, so any compression-based detector must be evaluated with format and quality controlled.")
-        items.append(f"The copy-move check is specific to its manipulation (AUC {cmv['orb_auc']:.2f} on copy-move, chance on splicing) and flags about one authentic image in {round(1 / a['fpr'])}; its flags must be confirmed by looking at the matched regions, which the interface shows.")
-        items.append("Whole-image noise statistics carry little information; local inspection of the residual map is required.")
+        items.append(f"The copy-move check is specific to its manipulation (AUC {cmv['orb_auc']:.2f} on copy-move, chance on splicing) and, after re-tuning, flags about one authentic image in {round(1 / a['fpr'])}; its flags should still be confirmed by looking at the matched regions, which the interface shows.")
+        if LOC: items.append(f"Comparing regions within one image works where whole-image scores fail: the ELA heat map localises edits (pixel AUC {LOC['by_type']['all']['ela']['pixel_auc']:.2f}), while the noise map does not on JPEG-compressed data.")
         items.append("No single check covers all manipulations, and training-free methods detect splicing poorly, which supports presenting several complementary views and explicit limitations instead of a verdict.")
     else:
         items.append("[Image inferences pending the CASIA v2.0 evaluation.]")
     if VIDEO:
         items.append("Colour-histogram scene detection is highly specific (no false alarms on clean clips) and finds inserted footage reliably.")
         items.append("Robust (median/MAD) motion-spike detection over the whole video locates deleted segments that SSIM and histograms miss, with a low false-alarm rate.")
-        items.append("Perceptual-hash repeat detection is not specific on moving footage and needs to be combined with motion information before its flags can be trusted.")
+        items.append("Perceptual hashing alone is not specific on moving footage; combined with optical flow it keeps every frozen segment and drops the false alarms.")
     return [("ul", items)]
 
 
@@ -549,6 +632,8 @@ def expand(blocks):
     out = []
     for b in blocks:
         if b[0] == "casia_discussion": out += casia_discussion()
+        elif b[0] == "localization_discussion": out += localization_discussion()
+        elif b[0] == "improvements": out += improvements()
         elif b[0] == "inferences": out += inferences()
         else: out.append(b)
     return out

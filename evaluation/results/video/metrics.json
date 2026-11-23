@@ -7,7 +7,7 @@
       "detected_by_any_check": 15,
       "by_check": {
         "scene": 14,
-        "repeat": 10,
+        "repeat": 0,
         "motion": 13
       }
     },
@@ -29,7 +29,7 @@
       "detected_by_any_check": 14,
       "by_check": {
         "scene": 0,
-        "repeat": 12,
+        "repeat": 0,
         "motion": 14
       }
     }
@@ -41,9 +41,9 @@
       "flags_per_minute": 0.0
     },
     "repeat": {
-      "clips_with_any_flag": 15,
+      "clips_with_any_flag": 0,
       "clips": 15,
-      "flags_per_minute": 25.24390243902439
+      "flags_per_minute": 0.0
     },
     "motion": {
       "clips_with_any_flag": 5,
@@ -51,13 +51,13 @@
       "flags_per_minute": 4.024390243902439
     },
     "any": {
-      "clips_with_any_flag": 15,
+      "clips_with_any_flag": 5,
       "clips": 15
     }
   },
   "processing_seconds": {
-    "mean": 2.444233333333334,
-    "max": 3.124
+    "mean": 4.5481833333333315,
+    "max": 5.785
   },
   "errors": 0
 }

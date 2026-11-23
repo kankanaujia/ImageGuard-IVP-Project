@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { CategoricalChartState } from "recharts/types/chart/types";
 import { Shell } from "@/components/shell";
-import { AnalysisLayout, EvidenceHeader, Limitations, MethodCard, Metric, fmt, fmtTime, useAnalysis } from "@/components/analysis";
+import { AnalysisLayout, EvidenceHeader, Limitations, MethodCard, Metric, NotesPanel, fmt, fmtTime, useAnalysis } from "@/components/analysis";
 import { artifactUrl, frameUrl } from "@/services/api";
 import type { Investigation, VideoFrame, VideoResult } from "@/types/api";
 
@@ -19,7 +19,7 @@ function VideoAnalysis() {
   const state = useAnalysis<VideoResult>("video");
   // Keyed by id so the selected frame resets when switching investigations.
   return <AnalysisLayout kind="video" eyebrow="Video examination" title="Video forensics" accept={ACCEPT} state={state}>
-    {state.detail && <VideoReport key={state.detail.id} item={state.detail} />}
+    {state.detail && <VideoReport key={state.detail.id} item={state.detail} onDelete={() => state.remove(state.detail!.id)} />}
   </AnalysisLayout>;
 }
 
@@ -34,7 +34,7 @@ const flowFile = (f: VideoFrame) => `flow_${String(f.index).padStart(8, "0")}.jp
 const axis = { tick: { fill: "#74849a", fontSize: 10 }, stroke: "#2a3c55" };
 const tooltipStyle = { background: "#101a28", border: "1px solid #2a3c55", fontSize: 11 };
 
-function VideoReport({ item }: { item: Investigation<VideoResult> }) {
+function VideoReport({ item, onDelete }: { item: Investigation<VideoResult>; onDelete: () => Promise<void> }) {
   const r = item.result;
   const { frames, video, ssim, scene_detection: scenes, frame_hashing: hashing, optical_flow: flow } = r;
   const fullFlow = flow?.status === "completed" && !!flow.timestamps; // false for investigations made before full-video flow
@@ -79,7 +79,7 @@ function VideoReport({ item }: { item: Investigation<VideoResult> }) {
   </>;
 
   return <div className="stack">
-    <EvidenceHeader item={item} facts={[
+    <EvidenceHeader item={item} onDelete={onDelete} facts={[
       ["Duration", fmtTime(video.duration)], ["Frame rate", `${fmt(video.fps)} fps`],
       ["Resolution", `${video.width} × ${video.height}`], ["Total frames", String(video.frame_count)],
       ["Sampled", `${frames.length} @ every ${video.sample_interval_seconds}s`], ["Processed in", `${r.processing_seconds}s`],
@@ -88,7 +88,7 @@ function VideoReport({ item }: { item: Investigation<VideoResult> }) {
     <div className="metrics">
       <Metric label="Candidate indicators" value={r.indicator_summary.candidate_indicators} note="Scene cuts + repeated frames" />
       <Metric label="Scene-change candidates" value={scenes?.candidates?.length ?? "—"} note="Large colour-distribution jumps" />
-      <Metric label="Repeated frames" value={hashing?.pairs?.length ?? "—"} note="Near-identical consecutive samples" />
+      <Metric label="Repeated frames" value={hashing?.pairs?.length ?? "—"} note={hashing?.motion_checked ? "Similar AND motionless samples" : "Near-identical consecutive samples"} />
       <Metric label="Motion spikes" value={fullFlow ? flow!.spikes!.length : "—"} note={fullFlow ? `Peak ${fmt(flow!.peak_mean_magnitude, 1)} px at ${fmtTime(flow!.peak_timestamp!)}` : "Re-analyse for full-video flow"} />
       <Metric label="Lowest SSIM" value={lowest ? fmt(lowest.s) : "—"} note={lowest ? `at ${fmtTime(lowest.t)}` : "Needs 2+ frames"} />
     </div>
@@ -180,10 +180,10 @@ function VideoReport({ item }: { item: Investigation<VideoResult> }) {
       </MethodCard>
 
       <MethodCard title="Repeated-frame detection (perceptual hash)" result={hashing}
-        what="Computes a perceptual hash (pHash) of each sampled frame and compares neighbours. A Hamming distance of 4 or less means they look nearly the same."
-        read="Runs of repeats can show frozen, looped or padded footage. In static scenes (a still camera, a slide) repeats are expected."
+        what="Computes a perceptual hash (pHash) of each sampled frame and compares neighbours. A pair counts as a repeat when the hashes are within 4 bits AND optical flow shows almost no motion (≤ 1 px) between the two samples."
+        read="Runs of repeats can show frozen, looped or padded footage. The motion check stops slow camera pans from counting as repeats, but in a genuinely static scene (a fixed camera, a slide) repeats are expected."
         caveat={hashing?.note}>
-        {hashing?.status === "completed" && <div className="kv"><span>Exact · near repeats</span><span>{hashing.pairs.filter(p => p.kind === "exact").length} · {hashing.pairs.filter(p => p.kind === "near_duplicate").length}</span></div>}
+        {hashing?.status === "completed" && <><div className="kv"><span>Confirmed repeats (exact · near)</span><span>{hashing.pairs.filter(p => p.kind === "exact").length} · {hashing.pairs.filter(p => p.kind === "near_duplicate").length}</span></div>{hashing.hash_only_pairs !== undefined && <div className="kv"><span>Similar by hash only</span><span>{hashing.hash_only_pairs} (before the motion check)</span></div>}</>}
       </MethodCard>
 
       <MethodCard title="Optical flow (motion)" result={flow}
@@ -201,6 +201,7 @@ function VideoReport({ item }: { item: Investigation<VideoResult> }) {
       </MethodCard>
     </div>
 
+    <NotesPanel id={item.id} initial={item.notes ?? ""} />
     <Limitations items={r.limitations} statement={r.indicator_summary.statement} />
   </div>;
 }

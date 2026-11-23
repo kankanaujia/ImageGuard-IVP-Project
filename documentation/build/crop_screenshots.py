@@ -5,8 +5,9 @@ from PIL import Image
 HERE = Path(__file__).resolve().parent / "screenshots"
 CROPS = {  # output name: (raw page, (left, top, right, bottom)) in screenshot pixels
     "overview.png": ("overview", (0, 0, 1400, 500)),
-    "investigation.png": ("investigation", (0, 0, 1400, 380)),
+    # investigation.png (batch queue in progress) is captured from the live browser, since it needs files queued
     "image_analysis.png": ("image", (0, 0, 1400, 930)),
+    "image_slider.png": ("slider", (515, 500, 1370, 1215)),
     "image_cards.png": ("image", (530, 945, 1370, 1345)),
     "video_analysis.png": ("video", (0, 0, 1400, 920)),
     "video_frames.png": ("video", (540, 930, 1370, 1640)),

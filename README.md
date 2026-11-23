@@ -2,6 +2,13 @@
 
 ImageGuard is a local web application for explainable image and video forensic screening. It reports observations and limitations; it does not decide whether media is fake.
 
+## Features
+
+- **Images:** error level analysis with a localised block heat map, ORB copy-move detection (repeated RANSAC, rule tuned on held-out CASIA data), noise-consistency heat map, JPEG compression history, colour histograms and EXIF.
+- **Videos:** frame sampling, motion-confirmed repeated frames (perceptual hash + optical flow), SSIM continuity, scene-change detection and full-video optical flow with robust motion-spike detection.
+- **Evidence handling:** originals stored unchanged under random names, SHA-256 at intake, one-click re-verification, complete deletion.
+- **Workflow:** background analysis with live progress, batch upload of many files or a folder, side-by-side or wipe-slider comparison with zoom, case notes, readable PDF reports.
+
 ## Architecture
 
 - `frontend/`: Next.js App Router, React, TypeScript, Tailwind CSS v4 and Lucide icons.
@@ -35,7 +42,15 @@ backend\.venv\Scripts\python.exe -m pip install --force-reinstall --no-deps --no
 
 If PowerShell blocks activation, use `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or run `backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt` without activation.
 
-## Start backend
+## Start (one click)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File start.ps1
+```
+
+Starts the backend and frontend in the background (output in `logs/`), waits until both answer and opens http://localhost:3000. Stop them with `start.ps1 -Stop`.
+
+## Start backend manually
 
 From project root, in one PowerShell window:
 
@@ -45,7 +60,7 @@ backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload --host 127
 
 API docs: http://127.0.0.1:8000/docs
 
-## Start frontend
+## Start frontend manually
 
 In a second PowerShell window:
 
@@ -62,15 +77,21 @@ App: http://localhost:3000. Set `NEXT_PUBLIC_API_URL` if the backend uses a diff
 backend\.venv\Scripts\python.exe -m pytest
 ```
 
-Run the current tests after installing prerequisites. Frontend production build: `cd frontend; npm run build`.
+26 tests, including end-to-end API tests that run against a temporary data folder (`IMAGEGUARD_DATA_DIR`), so your own investigations are never touched. Frontend checks: `cd frontend; npm run lint; npm run build`.
 
 ## Evaluation
 
-Both scripts run the real analysis pipeline and write results to `evaluation/results/`.
+The scripts run the real analysis pipeline and write results to `evaluation/results/`.
 
 ```powershell
-# CASIA v2.0 (download from Kaggle; pass the folder that contains Au and Tp)
+# CASIA v2.0 image-level evaluation (download from Kaggle; pass the folder that contains Au and Tp)
 backend\.venv\Scripts\python.exe -m evaluation.casia_eval "C:\path\to\CASIA2" --workers 10
+# JPEG save settings per class (explains the ELA results)
+backend\.venv\Scripts\python.exe -m evaluation.casia_jpeg_quality "C:\path\to\CASIA2"
+# Pixel-level localisation against the CASIA ground-truth masks
+backend\.venv\Scripts\python.exe -m evaluation.casia_localization "C:\path\to\CASIA2" --workers 10
+# Copy-move rule: chosen on one half of CASIA, reported on the other
+backend\.venv\Scripts\python.exe -m evaluation.copy_move_tuning "C:\path\to\CASIA2" --workers 10
 # Synthetic video benchmark (generates clips with known edits)
 backend\.venv\Scripts\python.exe -m evaluation.video_benchmark --per-kind 15
 ```
@@ -98,11 +119,14 @@ cd documentation\build; node build_deck.js
 ## API
 
 - `GET /`, `/api/health`, `/api/system-info`
-- `POST /api/image/analyze`, `/api/video/analyze` (multipart field `file`)
+- `POST /api/image/analyze`, `/api/video/analyze` (multipart field `file`; add `?background=true` to get a job id at once)
+- `GET /api/jobs/{job_id}`: stage, progress and resulting investigation id of a background analysis
 - `GET /api/investigations`, `/api/investigations/{id}`, `/api/investigations/{id}/verify`
-- `GET /api/investigations/{id}/artifacts/{name}`
-- `GET /api/reports/{id}`, `/api/reports/{id}/download`
+- `DELETE /api/investigations/{id}`: removes the record, stored original, outputs and report
+- `PUT /api/investigations/{id}/notes` (JSON `{"notes": "..."}`): case notes, included in the PDF
+- `GET /api/investigations/{id}/artifacts/{name}`, `/api/investigations/{id}/original`
+- `GET /api/reports/{id}`, `/api/reports/{id}/download` (`?inline=true` to view in the browser)
 
 ## Interpretation and limits
 
-ELA is sensitive to recompression and format conversion; ORB repeat matches can come from natural textures. Noise measurements vary with image content and processing. Video sampling may miss short events, while scene changes and repeated frames are common. Review original media and context; no score is presented as a manipulation probability. Current uploads are capped at 100 MiB and processing is synchronous.
+ELA is sensitive to recompression and format conversion; ORB repeat matches can come from natural textures. Noise measurements vary with image content and processing. Video sampling may miss short events, while scene changes and repeated frames are common. The global ELA peak mostly reflects how a file was last saved; the ELA heat map is the better guide to *where* an edit may be. The noise heat map did not localise edits on JPEG-compressed CASIA images. Repeated frames are expected in genuinely static scenes. Review original media and context; no score is presented as a manipulation probability. Uploads are capped at 100 MiB; two analyses run at a time.

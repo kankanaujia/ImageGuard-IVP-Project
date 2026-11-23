@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".png"}
-APP_ORB_THRESHOLD = 4  # the app flags copy-move when >= 4 geometrically consistent matches
+APP_RULE = "copy-move group >= 5 consistent matches and copy >= 40 px from source"  # backend/processing/image/copy_move.py
 OUT = Path(__file__).resolve().parent / "results" / "casia"
 
 
@@ -65,8 +65,13 @@ def analyse(path_str: str, label: int) -> dict:
             row["noise_std"] = n["residual_std"]
             row["noise_tile_ratio"] = n["tile_variance_max"] / n["tile_variance_min"] if n["tile_variance_min"] > 0 else None
         row["exif_tags"] = len(a["metadata"]["exif"]) if ok("metadata") else None
+        row["ela_block_z_max"] = a["ela"].get("block_z_max") if ok("ela") else None
+        row["ela_unusual_share"] = a["ela"].get("unusual_block_share") if ok("ela") else None
+        row["noise_block_z_max"] = a["noise"].get("block_z_max_abs") if ok("noise") else None
+        row["noise_unusual_share"] = a["noise"].get("unusual_block_share") if ok("noise") else None
+        row["jpeg_quality"] = a["compression"].get("estimated_quality") if ok("compression") else None
         row["errors"] = ";".join(f"{k}:{v.get('error', '')[:80]}" for k, v in a.items() if v.get("status") == "error")
-        row["app_flag"] = int((row.get("orb_consistent") or 0) >= APP_ORB_THRESHOLD)
+        row["app_flag"] = int(bool(a["orb"].get("flagged"))) if ok("orb") else 0
     except Exception as exc:  # unreadable file etc.: record and continue
         row["errors"] = f"pipeline:{str(exc)[:120]}"
     finally:
@@ -102,6 +107,10 @@ SCORES = {  # name -> (column, direction: +1 means larger = more suspicious)
     "ELA peak difference": ("ela_peak", 1),
     "Noise tile variance ratio": ("noise_tile_ratio", 1),
     "Noise residual std": ("noise_std", 1),
+    "ELA heat map: strongest block": ("ela_block_z_max", 1),
+    "ELA heat map: unusual share": ("ela_unusual_share", 1),
+    "Noise heat map: strongest block": ("noise_block_z_max", 1),
+    "Noise heat map: unusual share": ("noise_unusual_share", 1),
 }
 
 
@@ -138,7 +147,7 @@ def evaluate(rows: list[dict]) -> dict:
             metrics["jpeg_only_auc"][name] = roc(sign * np.array([float(r[col]) for r in valid]), np.array([r["label"] for r in valid]))[3]
 
     y = np.array([r["label"] for r in rows if "app_flag" in r]); pred = np.array([r["app_flag"] for r in rows if "app_flag" in r])
-    metrics["app_threshold"] = {"rule": f"ORB consistent matches >= {APP_ORB_THRESHOLD}", **confusion(pred, y)}
+    metrics["app_threshold"] = {"rule": APP_RULE, **confusion(pred, y)}
     for kind in ("copy-move", "splicing"):
         subset = [r for r in rows if "app_flag" in r and r["type"] in (kind, "authentic")]
         if any(r["type"] == kind for r in subset):
@@ -218,7 +227,8 @@ def main() -> None:
 
     rows.sort(key=lambda r: (r["label"], r["file"]))
     fields = ["file", "label", "type", "format", "width", "height", "seconds", "ela_peak", "orb_raw", "orb_consistent",
-              "noise_std", "noise_tile_ratio", "exif_tags", "app_flag", "errors"]
+              "noise_std", "noise_tile_ratio", "exif_tags", "ela_block_z_max", "ela_unusual_share", "noise_block_z_max",
+              "noise_unusual_share", "jpeg_quality", "app_flag", "errors"]
     with open(args.out / "per_image.csv", "w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore"); writer.writeheader(); writer.writerows(rows)
     metrics = evaluate(rows)

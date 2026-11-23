@@ -11,13 +11,15 @@ const OUT = path.join(ROOT, "documentation", "ImageGuard_Presentation.pptx");
 const RES = path.join(ROOT, "evaluation", "results");
 const FIG = path.join(__dirname, "figures");
 const SHOT = path.join(__dirname, "screenshots");
-const IMG_ID = "90be9285-7978-4118-be69-36f30cb9d1ef";   // gulls (CASIA copy-move) demo investigation
-const VID_ID = "7cb63a45-6b04-49a3-a923-07b74c9ecd59";   // synthetic pan with inserted footage
-const ART = (id, f) => path.join(ROOT, "backend", "outputs", id, f);
+// Demo outputs copied from two investigations into figures/demo so the deck rebuilds from the repository alone.
+const DEMO = (f) => path.join(__dirname, "figures", "demo", f);
 
 const casia = JSON.parse(fs.readFileSync(path.join(RES, "casia", "metrics.json"), "utf8"));
 const jq = JSON.parse(fs.readFileSync(path.join(RES, "casia", "jpeg_quality.json"), "utf8"));
 const video = JSON.parse(fs.readFileSync(path.join(RES, "video", "metrics.json"), "utf8"));
+const tuning = JSON.parse(fs.readFileSync(path.join(RES, "casia", "copy_move_tuning.json"), "utf8"));
+const loc = JSON.parse(fs.readFileSync(path.join(RES, "casia", "localization.json"), "utf8"));
+const BEFORE = { repeatPerMinute: 25.2 };   // first version (commit cd4f057), same benchmark
 const pct = (x, d = 0) => `${(100 * x).toFixed(d)}%`;
 
 // ------------------------------------------------------------------ theme
@@ -161,8 +163,8 @@ pres.addSection({ title: "Introduction" });
   s.addText("Objectives", { placeholder: "title" });
   const obj = [
     ["Preserve evidence", "Store every upload unchanged under a random name and fingerprint it with SHA-256."],
-    ["Explain images", "Error level analysis, ORB copy-move detection, noise residuals, histograms and EXIF."],
-    ["Explain videos", "Repeated frames, SSIM continuity, scene cuts and full-video optical flow."],
+    ["Explain images", "ELA with a heat map, ORB copy-move detection, noise map, compression history, histograms and EXIF."],
+    ["Explain videos", "Motion-confirmed repeated frames, SSIM continuity, scene cuts and full-video optical flow."],
     ["Show, don't judge", "Visualisations, interpretation notes and limitations for every check, plus a PDF report."],
     ["Measure honestly", "Evaluate on CASIA v2.0 and a synthetic video benchmark, reporting failure modes."],
   ];
@@ -216,24 +218,21 @@ pres.addSection({ title: "System" });
 pres.addSection({ title: "Techniques" });
 {
   const s = content("Techniques");
-  s.addText("Image forensics: five complementary views of one photo", { placeholder: "title" });
-  const pics = [[ART(IMG_ID, "ela.png"), "Error level analysis"], [ART(IMG_ID, "orb.png"), "ORB copy-move matches"]];
-  const orig = path.join(process.env.USERPROFILE, "Downloads", "CASIA2", "Tp", "Tp_S_NNN_S_N_ani10172_ani10172_12451.jpg");
-  const left = fs.existsSync(orig) ? [[orig, "Evidence (CASIA v2.0 copy-move)"], ...pics.slice(0, 1)] : pics.slice(0, 1);
-  left.forEach(([f, cap], i) => {
-    const sz = fit(f, 2.9, 2.3);
-    picture(s, f, M + i * 3.05, 1.5, sz.w, sz.h, cap);
-    text(s, cap, { x: M + i * 3.05, y: 1.55 + sz.h, w: 2.9, h: 0.35, fontSize: 12, color: C.accent6 });
+  s.addText("Image forensics: six complementary views of one photo", { placeholder: "title" });
+  // 2 x 2 grid from the demo investigation: evidence, ELA heat map, copy-move matches, noise heat map
+  const grid = [[DEMO("gulls_evidence.jpg"), "Evidence (CASIA v2.0 copy-move)"], [DEMO("gulls_ela_map.png"), "ELA heat map"],
+                [DEMO("gulls_orb.png"), "Copy-move: duplicated gull matched to its source"], [DEMO("gulls_noise_map.png"), "Noise consistency map"]];
+  grid.forEach(([f, cap], i) => {
+    const sz = fit(f, 2.9, 2.2), x = M + (i % 2) * 3.05, y = 1.45 + Math.floor(i / 2) * 2.62;
+    picture(s, f, x, y, sz.w, sz.h, cap);
+    text(s, cap, { x, y: y + sz.h + 0.04, w: 2.9, h: 0.32, fontSize: 11, color: C.accent6 });
   });
-  const orb = ART(IMG_ID, "orb.png"), osz = fit(orb, 5.95, 2.2);
-  picture(s, orb, M, 4.35, osz.w, osz.h, "ORB copy-move matches linking the original and duplicated gull");
-  text(s, "ORB matches link the duplicated gull to its source", { x: M, y: 4.4 + osz.h, w: 6, h: 0.35, fontSize: 12, color: C.accent6 });
   const rows = [
-    ["ELA", "Re-save at JPEG Q90 and amplify |original − copy|; regions with a different compression history stand out."],
-    ["Copy-move", "2,500 ORB keypoints self-matched (ratio 0.78, ≥ 24 px apart), confirmed by a RANSAC affine fit."],
-    ["Noise", "Residual |I − Gaussian(I)| and its variance over an 8 × 8 grid."],
-    ["Histogram", "RGB distributions reveal clipping and contrast edits."],
-    ["Metadata", "EXIF camera, software and dates."],
+    ["ELA + heat map", "Re-save at JPEG Q90; each 16 × 16 block is compared with the rest of the image to point at unusual regions."],
+    ["Copy-move", "ORB self-matches grouped by repeated RANSAC; flagged at ≥ 5 matches with the copy ≥ 40 px away."],
+    ["Noise map", "Wavelet noise level per block; blocks much smoother or noisier than the rest stand out."],
+    ["Compression", "JPEG quantization tables give the save quality and software vs camera tables."],
+    ["Histogram & EXIF", "Clipping and contrast edits; camera, software and date tags."],
   ];
   rows.forEach(([h, b], i) => {
     const y = 1.5 + i * 1.05;
@@ -247,7 +246,7 @@ pres.addSection({ title: "Techniques" });
 {
   const s = content("Techniques");
   s.addText("Video forensics: compare neighbouring frames", { placeholder: "title" });
-  const fr = ART(VID_ID, "frames/frame_00000050.jpg"), fl = ART(VID_ID, "frames/flow_00000050.jpg");
+  const fr = DEMO("video_frame_5s.jpg"), fl = DEMO("video_flow_5s.jpg");
   const sz = fit(fr, 2.9, 1.9);
   picture(s, fr, M, 1.55, sz.w, sz.h, "Sampled frame at the inserted segment");
   picture(s, fl, M + 3.05, 1.55, sz.w, sz.h, "Optical flow into that frame: colour is direction, brightness is speed");
@@ -255,7 +254,7 @@ pres.addSection({ title: "Techniques" });
   text(s, "Optical flow into that frame", { x: M + 3.05, y: 1.6 + sz.h, w: 2.9, h: 0.35, fontSize: 12, color: C.accent6 });
   const rows = [
     ["Sampling", "1 frame per second, at most 180 frames, keeps analysis fast."],
-    ["Repeated frames", "Perceptual hash (pHash) of neighbours; distance ≤ 4 means near-identical."],
+    ["Repeated frames", "pHash distance ≤ 4 AND optical flow ≤ 1 px: frozen, not just slowly panning."],
     ["Continuity", "SSIM between neighbouring samples; sharp dips mark cuts or fast motion."],
     ["Scene cuts", "8 × 8 × 8 colour histogram, Bhattacharyya distance ≥ 0.55."],
     ["Motion", "Farnebäck dense flow for every pair; spikes above median + 3.5 × MAD are flagged."],
@@ -278,7 +277,7 @@ pres.addSection({ title: "Demo" });
   s.addText("Image forensics page", { placeholder: "title" });
   const f = path.join(SHOT, "image_analysis.png"), sz = fit(f, 8.6, 5.4);
   picture(s, f, M, 1.4, sz.w, sz.h, "Image forensics page: summary metrics and side-by-side ELA comparison");
-  const pts = [["Summary metrics", "Candidate indicators, copy-move matches, ELA peak, noise ratio, EXIF count"], ["Visual comparison", "Original beside ELA, noise residual or copy-move matches"],
+  const pts = [["Summary metrics", "Indicators, copy-move flag, unusual ELA and noise blocks, JPEG quality"], ["Visual comparison", "Heat maps, matches or residuals beside the original, or a wipe slider; click to zoom"],
                ["Method cards", "What each check does, how to read it, and its caveat"]];
   pts.forEach(([h, b], i) => {
     const y = 1.5 + i * 1.55;
@@ -304,12 +303,12 @@ pres.addSection({ title: "Results" });
   const s = content("Results");
   s.addText("How we tested it", { placeholder: "title" });
   const stats = [[casia.n.toLocaleString("en-US"), "CASIA v2.0 images\n7,491 authentic · 5,123 tampered"], ["60", "synthetic video clips with known edits (insertion, freeze, deletion, clean)"],
-                 [`${casia.seconds.mean.toFixed(2)} s`, "average analysis time per image on a laptop CPU"], ["10 / 10", "automated tests passing, plus 15 system and UI test cases"]];
+                 [`${casia.seconds.mean.toFixed(2)} s`, "average analysis time per image on a laptop CPU"], ["26 / 26", "automated tests passing (12 end-to-end API tests), plus UI test cases"]];
   stats.forEach(([v, l], i) => stat(s, M + i * 3.1, 1.9, 2.8, v, l, [C.accent2, C.accent5, C.accent4, C.accent1][i]));
   card(s, M, 4.6, W - 2 * M, 1.75);
   text(s, [
     { text: "Real pipeline, measured end to end. ", options: { bold: true, color: C.text2 } },
-    { text: "The evaluation scripts call the same analysis functions as the app on every image (10 parallel workers) and compute ROC curves, AUC, precision, recall and false-positive rates. Video edits count as detected when a flag lands within one second of the true edit." },
+    { text: `The evaluation scripts call the same analysis functions as the app on every image and compute ROC curves, AUC, precision, recall and false-positive rates; heat maps are scored against ${loc.evaluated.toLocaleString("en-US")} ground-truth masks. Rules were tuned on one half of CASIA and reported on the other. Video edits count as detected when a flag lands within one second of the true edit.` },
   ], { x: M + 0.35, y: 4.8, w: W - 2 * M - 0.7, h: 1.4, fontSize: 16, valign: "middle" });
 }
 
@@ -331,7 +330,7 @@ pres.addSection({ title: "Results" });
   const pts = [
     ["ELA scores highest", `AUC ${casia.scores["ELA peak difference"].auc.toFixed(2)}, but see the next slide for why.`],
     ["Copy-move works for copy-move", `AUC ${cmv.orb_auc.toFixed(2)} on copy-move forgeries, chance (${casia.by_type.splicing.orb_auc.toFixed(2)}) on splicing. Flags ${pct(cmv.recall)} of them, and ${pct(a.fpr, 1)} of authentic images.`],
-    ["Whole-image noise numbers fail", "AUC below 0.5: scene content dominates; the residual map must be read locally."],
+    ["Noise does not separate", "Whole-image noise scores sit near chance, and the noise map does not localise edits on JPEG data."],
   ];
   pts.forEach(([h, b], i) => {
     const y = 1.55 + i * 1.75;
@@ -356,7 +355,7 @@ pres.addSection({ title: "Results" });
   card(s, M, 4.3, W - 2 * M, 2.2, "1F3150");
   text(s, [
     { text: "What it means", options: { bold: true, color: C.accent1, breakLine: true } },
-    { text: `ELA keeps its AUC of ${casia.jpeg_only_auc["ELA peak difference"].toFixed(2)} on JPEGs alone, so file format is not the cause. A global ELA peak largely reflects how a file was last compressed, and CASIA's classes were saved differently. ELA is good evidence of re-saving, not proof of where (or whether) content was edited, so ImageGuard shows it as a map to inspect, never as a verdict.`, options: { color: C.background1 } },
+    { text: `ELA keeps its AUC of ${casia.jpeg_only_auc["ELA peak difference"].toFixed(2)} on JPEGs alone, so file format is not the cause: a global ELA peak reflects how a file was last saved. The fix was to compare regions within one image instead. The new ELA heat map points at edited pixels with a pixel AUC of ${loc.by_type.all.ela.pixel_auc.toFixed(2)} against the ground-truth masks.`, options: { color: C.background1 } },
   ], { x: M + 0.35, y: 4.45, w: W - 2 * M - 0.7, h: 1.95, fontSize: 17 });
   s.addNotes("This is the most important result: measure quantization tables before trusting compression-based scores on CASIA v2.0.");
 }
@@ -380,21 +379,45 @@ pres.addSection({ title: "Results" });
     valGridLine: { color: "D9DEE5", size: 0.75 }, catGridLine: { style: "none" }, valAxisLabelColor: H.accent6, catAxisLabelColor: H.dk1,
     showTitle: true, title: "False flags per minute on 15 unedited clips", titleFontSize: 14, titleColor: H.dk1, showLegend: false, ...chartText, objectName: "video-falsealarm-chart",
   });
-  text(s, "Scene-cut and motion-spike checks are reliable. The repeat check catches every freeze but also fires on slow camera pans, because pHash is built to ignore small shifts, so its flags are not yet trustworthy on moving footage.",
+  text(s, `Scene-cut and motion-spike checks are reliable. Repeats now need near-zero optical-flow motion too: every freeze is still caught, and false repeat alarms on panning clips fell from ${BEFORE.repeatPerMinute} per minute to ${fa.repeat.flags_per_minute.toFixed(1)}.`,
     { x: M, y: 6.15, w: W - 2 * M, h: 0.75, fontSize: 15 });
+}
+
+// ================================================================== 14a. Second iteration
+{
+  const s = pres.addSlide({ masterName: "SECTION_DARK", sectionTitle: "Results" });
+  s.addText("Second iteration: every fix measured", { placeholder: "title" });
+  const p = tuning.test.previous_rule, c = tuning.test.chosen;
+  const stats = [[`${pct(p.fpr, 1)} → ${pct(c.fpr, 1)}`, `copy-move false alarms on held-out CASIA (precision ${p.precision.toFixed(2)} → ${c.precision.toFixed(2)})`],
+                 [`${BEFORE.repeatPerMinute} → ${video.false_alarms.repeat.flags_per_minute.toFixed(0)}`, "false repeated-frame alarms per minute; frozen segments still 15 / 15"],
+                 [loc.by_type.all.ela.pixel_auc.toFixed(2), "pixel AUC of the new ELA heat map against ground-truth masks"]];
+  stats.forEach(([v, l], i) => {
+    text(s, v, { x: M + i * 4.1, y: 1.55, w: 3.9, h: 1.0, fontSize: 34, bold: true, color: C.accent1, fontFace: THEME.headFontFace, valign: "bottom" });
+    text(s, l, { x: M + i * 4.1, y: 2.65, w: 3.7, h: 0.9, fontSize: 15, color: C.background1 });
+  });
+  const features = ["Background jobs with live progress", "Batch: many files or a folder", "Case notes in the PDF", "Wipe slider and zoom",
+                    "Delete an investigation", "Readable PDF reports", "One-click start script", "26 automated tests"];
+  features.forEach((f, i) => {
+    const x = M + (i % 4) * 3.07, y = 4.25 + Math.floor(i / 4) * 1.05;
+    card(s, x, y, 2.9, 0.85, "1F3150");
+    text(s, f, { x: x + 0.2, y, w: 2.6, h: 0.85, fontSize: 15, color: C.background1, valign: "middle" });
+  });
+  text(s, "Rules were chosen on one half of the data and reported on the other; the stricter copy-move rule trades some recall (0.41 → 0.33) for fewer false alarms.",
+    { x: M, y: 6.45, w: W - 2 * M, h: 0.4, fontSize: 12, color: C.accent6, italic: true });
+  s.addNotes("The first evaluation found weaknesses; the second iteration fixed them and re-measured on the same benchmarks.");
 }
 
 // ================================================================== 14. Testing
 {
   const s = content("Results");
   s.addText("Testing found and fixed real defects", { placeholder: "title" });
-  [["10", "automated unit tests (pytest), all passing"], ["15", "system and UI test cases, all passing"], ["4", "defects found by testing and fixed"]]
+  [["26", "automated tests (pytest), incl. 12 end-to-end API tests"], ["26", "test cases in the report, all passing"], ["7", "defects found by testing and fixed"]]
     .forEach(([v, l], i) => stat(s, M + i * 2.4, 1.7, 2.2, v, l, [C.accent4, C.accent2, C.accent3][i]));
   const fixes = [
     ["Copy-move never ran", "OpenCV needed NumPy arrays, not lists; caught by a regression test."],
     ["Missing dependency", "Matplotlib was not in the requirements; charts could not load."],
-    ["Wrong test value", "A test expected an incorrect SHA-256; the code itself was right."],
     ["Front-end build failed", "A page needed a React Suspense boundary to pre-render."],
+    ["Symbols missing from PDFs", "Built-in PDF fonts lack ≈ and •; text now uses plain equivalents."],
   ];
   fixes.forEach(([h, b], i) => {
     const y = 1.5 + i * 1.3;
@@ -416,15 +439,15 @@ pres.addSection({ title: "Conclusion" });
     { text: "Classical techniques make a practical, private and explainable screening tool on an ordinary laptop", options: { bullet: true, breakLine: true } },
     { text: "Evidence is preserved and its integrity is verifiable at any time", options: { bullet: true, breakLine: true } },
     { text: "Scene-cut and motion-spike checks reliably locate inserted and deleted video segments", options: { bullet: true, breakLine: true } },
-    { text: "Honest evaluation exposed misleading scores: ELA on CASIA, pHash on panning video", options: { bullet: true } },
+    { text: "Evaluation exposed misleading scores, and measured fixes removed them: ELA heat map, motion-confirmed repeats, re-tuned copy-move", options: { bullet: true } },
   ], { x: M + 0.35, y: 2.25, w: 5.2, h: 4.1, fontSize: 16, paraSpaceAfter: 10 });
   card(s, 6.85, 1.45, 5.9, 5.1, C.text2);
   text(s, "Next steps", { x: 7.2, y: 1.65, w: 5.2, h: 0.5, fontSize: 20, bold: true, color: C.accent1, fontFace: THEME.headFontFace });
   text(s, [
-    { text: "Local, block-wise ELA and JPEG-ghost maps instead of a global peak", options: { bullet: true, breakLine: true } },
-    { text: "Motion-aware repeat detection: a repeat only when optical flow is near zero", options: { bullet: true, breakLine: true } },
-    { text: "Splicing heat maps combining compression and noise cues", options: { bullet: true, breakLine: true } },
-    { text: "Background jobs with real progress for long videos", options: { bullet: true, breakLine: true } },
+    { text: "JPEG-ghost and texture-normalised ELA maps for sharper localisation", options: { bullet: true, breakLine: true } },
+    { text: "A noise estimator robust to JPEG smoothing", options: { bullet: true, breakLine: true } },
+    { text: "Recover small copy-moves with SIFT or block matching", options: { bullet: true, breakLine: true } },
+    { text: "Adaptive video sampling around SSIM dips and motion spikes", options: { bullet: true, breakLine: true } },
     { text: "Evaluate on Columbia, CoMoFoD and real tampered videos", options: { bullet: true } },
   ], { x: 7.2, y: 2.25, w: 5.2, h: 4.1, fontSize: 16, paraSpaceAfter: 10, color: C.background1 });
 }

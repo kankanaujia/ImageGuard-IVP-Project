@@ -16,3 +16,4 @@ class Investigation(Base):
     sha256: Mapped[str] = mapped_column(String(64), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     result_json: Mapped[str] = mapped_column(Text)
+    notes: Mapped[str] = mapped_column(Text, default="", server_default="")  # investigator's case notes

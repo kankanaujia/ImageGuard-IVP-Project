@@ -15,3 +15,4 @@ coverage/
 # Local tooling and large intermediates
 .claude/
 documentation/build/screenshots/raw/
+logs/

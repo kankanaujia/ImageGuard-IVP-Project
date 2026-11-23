@@ -1,5 +1,6 @@
 """Dense optical flow across every pair of adjacent sampled frames."""
 from pathlib import Path
+from typing import Callable
 import cv2
 import numpy as np
 
@@ -33,7 +34,7 @@ def flow_file(frame: dict) -> str:
     return f"flow_{frame['index']:08d}.jpg"
 
 
-def analyze_flow(frames: list[dict], frame_dir: Path, output: Path) -> dict:
+def analyze_flow(frames: list[dict], frame_dir: Path, output: Path, progress: Callable[[float], None] | None = None) -> dict:
     """Compute Farneback flow for each adjacent pair of sampled frames.
 
     Magnitudes are reported in original-resolution pixels. A per-pair flow image is
@@ -49,7 +50,8 @@ def analyze_flow(frames: list[dict], frame_dir: Path, output: Path) -> dict:
     timestamps, means, p95s = [], [], []
     peak_index, peak_mean = None, -1.0
     previous = cv2.resize(first, size, interpolation=cv2.INTER_AREA)
-    for frame in frames[1:]:
+    for done, frame in enumerate(frames[1:], 1):
+        if progress: progress(done / (len(frames) - 1))
         current = _load_gray(frame_dir / frame["file"], size)
         flow = cv2.calcOpticalFlowFarneback(previous, current, None, 0.5, 3, 15, 3, 5, 1.2, 0)
         magnitude = np.hypot(flow[..., 0], flow[..., 1]) / scale

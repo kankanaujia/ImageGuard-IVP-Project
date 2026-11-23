@@ -1,8 +1,10 @@
 "use client";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { X, ZoomIn } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { Shell } from "@/components/shell";
-import { AnalysisLayout, EvidenceHeader, Limitations, MethodCard, Metric, fmt, useAnalysis } from "@/components/analysis";
+import { AnalysisLayout, EvidenceHeader, Limitations, MethodCard, Metric, NotesPanel, fmt, useAnalysis } from "@/components/analysis";
 import { apiUrl, artifactUrl } from "@/services/api";
 import type { ImageResult, Investigation } from "@/types/api";
 
@@ -15,19 +17,19 @@ export default function ImageAnalysisPage() {
 function ImageAnalysis() {
   const state = useAnalysis<ImageResult>("image");
   return <AnalysisLayout kind="image" eyebrow="Image examination" title="Image forensics" accept={ACCEPT} state={state}>
-    {state.detail && <ImageReport item={state.detail} />}
+    {state.detail && <ImageReport key={state.detail.id} item={state.detail} onDelete={() => state.remove(state.detail!.id)} />}
   </AnalysisLayout>;
 }
 
-function ImageReport({ item }: { item: Investigation<ImageResult> }) {
+function ImageReport({ item, onDelete }: { item: Investigation<ImageResult>; onDelete: () => Promise<void> }) {
   const r = item.result;
-  const { ela, orb, noise, histogram, metadata } = r.algorithms;
-  const tileRatio = noise?.status === "completed" && noise.tile_variance_min > 0 ? noise.tile_variance_max / noise.tile_variance_min : undefined;
+  const { ela, orb, noise, compression, histogram, metadata } = r.algorithms;
   const exifCount = metadata?.status === "completed" ? Object.keys(metadata.exif).length : undefined;
-  const flagged = (orb?.candidate_matches ?? 0) >= 4;
+  const flagged = orb?.flagged ?? (orb?.candidate_matches ?? 0) >= 4;   // older results have no "flagged" field
+  const pct = (v?: number) => v === undefined ? "—" : `${(100 * v).toFixed(1)}%`;
 
   return <div className="stack">
-    <EvidenceHeader item={item} facts={[
+    <EvidenceHeader item={item} onDelete={onDelete} facts={[
       ["Format", r.original_image.format], ["Dimensions", `${r.original_image.width} × ${r.original_image.height}`],
       ["Colour mode", r.original_image.mode], ["File size", `${(item.original_file.size_bytes / 1024).toFixed(1)} KB`],
       ["Processed in", `${r.processing_seconds}s`], ["Analysed", new Date(item.created_at).toLocaleString()],
@@ -35,45 +37,61 @@ function ImageReport({ item }: { item: Investigation<ImageResult> }) {
 
     <div className="metrics">
       <Metric label="Candidate indicators" value={r.indicator_summary.candidate_indicators} note="Checks that flagged something" />
-      <Metric label="Copy-move matches" value={orb?.status === "completed" ? orb.geometrically_consistent_matches : "—"} note={orb?.status === "completed" ? `${orb.raw_candidate_matches} raw · ${flagged ? "review" : "below threshold"}` : "check failed"} />
-      <Metric label="ELA peak difference" value={ela?.status === "completed" ? ela.difference_peak : "—"} note={`At JPEG quality ${ela?.quality ?? "—"}`} />
-      <Metric label="Noise tile variance ratio" value={tileRatio ? `${fmt(tileRatio, 1)}×` : "—"} note="Max ÷ min across 8×8 grid" />
-      <Metric label="EXIF tags" value={exifCount ?? "—"} note={exifCount === 0 ? "No camera metadata" : "Embedded metadata"} />
+      <Metric label="Copy-move" value={orb?.status === "completed" ? (flagged ? "Flagged" : "Not flagged") : "—"}
+        note={orb?.status !== "completed" ? "check failed" : orb.geometrically_consistent_matches === 0 ? "No consistent match group"
+          : `${orb.geometrically_consistent_matches} consistent matches${orb.copy_shift_px ? ` · ${fmt(orb.copy_shift_px, 0)} px apart` : ""}`} />
+      <Metric label="ELA unusual blocks" value={pct(ela?.unusual_block_share)} note={ela?.block_z_max !== undefined ? `Strongest ${fmt(ela.block_z_max, 1)} deviations` : "Re-analyse for the heat map"} />
+      <Metric label="Noise unusual blocks" value={pct(noise?.unusual_block_share)} note={noise?.block_z_max_abs !== undefined ? `Strongest ${fmt(noise.block_z_max_abs, 1)} deviations` : "Re-analyse for the heat map"} />
+      <Metric label="JPEG quality" value={compression?.estimated_quality !== undefined ? `≈ ${compression.estimated_quality}` : compression?.is_jpeg === false ? "Not JPEG" : "—"}
+        note={compression?.standard_ijg_tables === undefined ? `${exifCount ?? "—"} EXIF tags` : compression.standard_ijg_tables ? "Standard (software) tables" : "Custom (camera) tables"} />
     </div>
 
     <CompareViewer item={item} />
 
     <div className="result-grid">
       <MethodCard title="Error level analysis (ELA)" result={ela}
-        what="Re-saves the image as JPEG at a known quality and shows the per-pixel difference, brightened so the largest difference is white."
-        read="Areas compressed the same number of times should look similarly bright. A region that glows much more or less than similar content around it may have a different compression history."
-        caveat={ela?.note}>
+        what="Re-saves the image as JPEG at quality 90 and shows the per-pixel difference. The heat map compares every 16×16 block with the rest of this image."
+        read="In the heat map, bright blocks recompress differently from their surroundings and may have a different compression history. The global peak mostly reflects how the whole file was last saved, so rely on the map, not the peak."
+        caveat={ela?.map_note ?? ela?.note}>
         {ela?.status === "completed" && <>
-          <div className="kv"><span>Recompression quality</span><span>{ela.quality}</span></div>
-          <div className="kv"><span>Peak difference</span><span>{ela.difference_peak} / 255</span></div>
-          <div className="kv"><span>Max difference R · G · B</span><span>{ela.channel_ranges.map(c => c[1]).join(" · ")}</span></div>
+          {ela.unusual_block_share !== undefined && <div className="kv"><span>Unusual blocks (≥ 3.5 deviations)</span><span>{pct(ela.unusual_block_share)} · strongest {fmt(ela.block_z_max, 1)}</span></div>}
+          <div className="kv"><span>Peak difference (whole image)</span><span>{ela.difference_peak} / 255 at quality {ela.quality}</span></div>
         </>}
       </MethodCard>
 
       <MethodCard title="Copy-move detection (ORB)" result={orb}
-        what="Finds ORB keypoints and matches the image against itself. Matches between distant points that agree on one shared shift or rotation (RANSAC) suggest a duplicated region."
-        read="Lines join each keypoint to its match. Many parallel lines between the same two areas are worth a closer look; scattered single lines are usually noise."
+        what="Matches ORB keypoints within the image and keeps groups of matches that agree on one shift or rotation (RANSAC). The image is flagged when a group of at least 5 matches has its copy at least 40 px from the source."
+        read="Lines join each source point (green) to its copy (red). A bundle of parallel lines between two areas is worth a close look; natural repetition such as windows, tiles or foliage can also match."
         caveat={orb?.interpretation}>
         {orb?.status === "completed" && <>
-          <div className="kv"><span>Keypoints found</span><span>{orb.keypoints}</span></div>
-          <div className="kv"><span>Raw self-matches</span><span>{orb.raw_candidate_matches}</span></div>
-          <div className="kv"><span>Geometrically consistent</span><span>{orb.geometrically_consistent_matches} {flagged && <span className="badge badge-warn">review</span>}</span></div>
+          <div className="kv"><span>Keypoints · raw self-matches</span><span>{orb.keypoints} · {orb.raw_candidate_matches}</span></div>
+          <div className="kv"><span>Largest consistent group</span><span>{orb.geometrically_consistent_matches === 0 ? "None found"
+            : `${orb.geometrically_consistent_matches} matches${orb.copy_shift_px !== undefined ? `, copy ${fmt(orb.copy_shift_px, 0)} px from source` : ""}`}</span></div>
+          <div className="kv"><span>Result</span><span>{flagged ? <span className="badge badge-warn">flagged for review</span> : "Not flagged"}</span></div>
         </>}
       </MethodCard>
 
-      <MethodCard title="Noise residual analysis" result={noise}
-        what="Subtracts a lightly blurred copy from the image, leaving the fine sensor noise and texture, then measures its variance in an 8×8 grid of tiles."
-        read="A single camera image tends to have fairly even noise. A tile or region with much smoother or noisier residual than similar content nearby can point to pasted or retouched material."
-        caveat={noise?.note}>
+      <MethodCard title="Noise consistency" result={noise}
+        what="Estimates the local noise level of every 16×16 block from the finest wavelet detail band (median absolute coefficient ÷ 0.6745) and compares it with the rest of the image."
+        read="Bright blocks are much smoother or much noisier than the rest of the photo, as content pasted from another camera or processing chain often is. Sky, saturated highlights and blurred backgrounds can also stand out."
+        caveat={noise?.map_note ?? noise?.note}>
         {noise?.status === "completed" && <>
+          {noise.unusual_block_share !== undefined && <div className="kv"><span>Unusual blocks (≥ 3.5 deviations)</span><span>{pct(noise.unusual_block_share)} · strongest {fmt(noise.block_z_max_abs, 1)}</span></div>}
           <div className="kv"><span>Residual mean · σ</span><span>{fmt(noise.residual_mean)} · {fmt(noise.residual_std)}</span></div>
-          <div className="kv"><span>Tile variance min · max</span><span>{fmt(noise.tile_variance_min)} · {fmt(noise.tile_variance_max)}</span></div>
-          <div className="kv"><span>Variance ratio</span><span>{tileRatio ? `${fmt(tileRatio, 1)}×` : "—"}</span></div>
+        </>}
+      </MethodCard>
+
+      <MethodCard title="Compression history" result={compression}
+        what="Reads the JPEG quantization tables, which record how the file was last saved, and estimates the quality setting."
+        read="Standard IJG tables suggest the file was last saved by software (an editor, app or website) rather than straight from a camera. That is common and legitimate, but worth knowing when a file is claimed to be a camera original."
+        caveat={compression?.note}>
+        {compression?.status === "completed" && <>
+          {compression.is_jpeg && compression.estimated_quality !== undefined && <>
+            <div className="kv"><span>Estimated quality</span><span>≈ {compression.estimated_quality}</span></div>
+            <div className="kv"><span>Quantization tables</span><span>{compression.standard_ijg_tables ? "Standard IJG (software)" : "Custom (camera or editor)"}</span></div>
+            <div className="kv"><span>Chroma subsampling · progressive</span><span>{compression.chroma_subsampling} · {compression.progressive ? "yes" : "no"}</span></div>
+          </>}
+          {compression.observations.map(o => <p className="subtle" key={o} style={{ margin: "6px 0" }}>• {o}</p>)}
         </>}
       </MethodCard>
 
@@ -86,41 +104,94 @@ function ImageReport({ item }: { item: Investigation<ImageResult> }) {
           <div className="kv"><span>Grey mean · σ</span><span>{fmt(histogram.grayscale_mean, 1)} · {fmt(histogram.grayscale_std, 1)}</span></div>
         </>}
       </MethodCard>
+
+      <MethodCard title="Metadata (EXIF)" result={metadata}
+        what="Reads the file's embedded metadata: camera make and model, capture time, software and similar tags."
+        read="A Software tag naming an editor, or capture dates that conflict with the story, are leads to check. Missing EXIF is common and proves nothing on its own."
+        caveat="Metadata is easy to remove or rewrite.">
+        {metadata?.status === "completed" && (Object.keys(metadata.exif).length
+          ? <div className="exif">{Object.entries(metadata.exif).map(([k, v]) => <div className="kv" key={k}><span>{k}</span><span style={{ wordBreak: "break-all" }}>{v}</span></div>)}</div>
+          : metadata.observations.map(o => <p className="subtle" key={o}>{o}</p>))}
+      </MethodCard>
     </div>
 
-    <MethodCard title="Metadata (EXIF)" result={metadata}
-      what="Reads the file's embedded metadata: camera make and model, capture time, software and similar tags."
-      read="A Software tag naming an editor, or capture dates that conflict with the story, are leads to check. Missing EXIF is common and proves nothing on its own."
-      caveat="Metadata is easy to remove or rewrite.">
-      {metadata?.status === "completed" && (Object.keys(metadata.exif).length
-        ? <div className="exif">{Object.entries(metadata.exif).map(([k, v]) => <div className="kv" key={k}><span>{k}</span><span style={{ wordBreak: "break-all" }}>{v}</span></div>)}</div>
-        : metadata.observations.map(o => <p className="subtle" key={o}>{o}</p>))}
-    </MethodCard>
-
+    <NotesPanel id={item.id} initial={item.notes ?? ""} />
     <Limitations items={r.limitations} statement={r.indicator_summary.statement} />
   </div>;
 }
 
-const VIEWS = [
-  { key: "ela", label: "ELA" }, { key: "noise", label: "Noise residual" }, { key: "orb", label: "Copy-move matches" },
-] as const;
+type View = { key: string; label: string; file?: string };
 
-/** Original next to a chosen visualization. The ORB output already holds two copies, so it is shown full width. */
+/** Original vs. one visualisation: side by side, or overlaid with a wipe slider; any view can be zoomed. */
 function CompareViewer({ item }: { item: Investigation<ImageResult> }) {
-  const [view, setView] = useState<(typeof VIEWS)[number]["key"]>("ela");
-  const result = item.result.algorithms[view];
+  const a = item.result.algorithms;
+  const ok = <T extends { status: string }>(v?: T) => v?.status === "completed" ? v : undefined;
+  const views: View[] = [
+    { key: "ela_map", label: "ELA heat map", file: ok(a.ela)?.map_visualization },
+    { key: "noise_map", label: "Noise heat map", file: ok(a.noise)?.map_visualization },
+    { key: "orb", label: "Copy-move matches", file: ok(a.orb)?.visualization },
+    { key: "ela", label: "ELA difference", file: ok(a.ela)?.visualization },
+    { key: "noise", label: "Noise residual", file: ok(a.noise)?.visualization },
+  ].filter(v => v.file);
+  // ?view=orb&mode=slider opens a specific comparison (shareable deep link)
+  const params = useSearchParams();
+  const [key, setKey] = useState(views.some(v => v.key === params.get("view")) ? params.get("view")! : views[0]?.key);
+  const [mode, setMode] = useState<"side" | "slider">(params.get("mode") === "slider" ? "slider" : "side");
+  const [split, setSplit] = useState(50);
+  const [zoom, setZoom] = useState<{ src: string; label: string } | null>(null);
+  const view = views.find(v => v.key === key) ?? views[0];
   const original = apiUrl(`/api/investigations/${item.id}/original`);
+  if (!view) return <div className="panel error">No visualizations are available for this investigation.</div>;
+  const visual = artifactUrl(item.id, view.file!);
+
   return <div className="panel">
     <div className="method-head">
       <div className="section-title">Visual comparison</div>
-      <div className="tabs">{VIEWS.map(v => <button key={v.key} className={view === v.key ? "active" : ""} onClick={() => setView(v.key)}>{v.label}</button>)}</div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="tabs">{views.map(v => <button key={v.key} className={view.key === v.key ? "active" : ""} onClick={() => setKey(v.key)}>{v.label}</button>)}</div>
+        <div className="tabs">
+          <button className={mode === "side" ? "active" : ""} onClick={() => setMode("side")}>Side by side</button>
+          <button className={mode === "slider" ? "active" : ""} onClick={() => setMode("slider")}>Slider</button>
+        </div>
+      </div>
     </div>
-    {result?.status !== "completed" ? <div className="error">This visualization is unavailable{result?.error ? `: ${result.error}` : "."}</div>
-      : view === "orb" ? <img className="artifact" src={artifactUrl(item.id, result.visualization)} alt="ORB copy-move matches" />
-      : <div className="compare">
-          <figure><img className="artifact" src={original} alt="Original evidence" /><figcaption>Original</figcaption></figure>
-          <figure><img className="artifact" src={artifactUrl(item.id, result.visualization)} alt={`${view} visualization`} /><figcaption>{VIEWS.find(v => v.key === view)?.label}</figcaption></figure>
-        </div>}
+    {mode === "side" ? <div className="compare">
+      <figure><button className="zoomable" onClick={() => setZoom({ src: original, label: "Original" })}><img className="artifact" src={original} alt="Original evidence" /><ZoomIn size={15} className="zoom-icon" /></button>
+        <figcaption>Original · click to zoom</figcaption></figure>
+      <figure><button className="zoomable" onClick={() => setZoom({ src: visual, label: view.label })}><img className="artifact" src={visual} alt={view.label} /><ZoomIn size={15} className="zoom-icon" /></button>
+        <figcaption>{view.label} · click to zoom</figcaption></figure>
+    </div> : <div>
+      <div className="wipe">
+        <img src={original} alt="Original evidence" />
+        <img src={visual} alt={view.label} style={{ clipPath: `inset(0 0 0 ${split}%)` }} />
+        <div className="wipe-line" style={{ left: `${split}%` }} />
+      </div>
+      <div className="wipe-controls">
+        <span className="stat-note">Original</span>
+        <input type="range" min={0} max={100} value={split} onChange={e => setSplit(Number(e.target.value))} aria-label="Wipe between original and visualization" />
+        <span className="stat-note">{view.label}</span>
+      </div>
+    </div>}
+    {zoom && <ZoomDialog src={zoom.src} label={zoom.label} onClose={() => setZoom(null)} />}
+  </div>;
+}
+
+function ZoomDialog({ src, label, onClose }: { src: string; label: string; onClose: () => void }) {
+  const [scale, setScale] = useState(2);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return <div className="lightbox" role="dialog" aria-modal="true" aria-label={`${label} zoomed`} onClick={onClose}>
+    <div className="lightbox-bar" onClick={e => e.stopPropagation()}>
+      <b>{label}</b>
+      <div className="tabs">{[1, 2, 4].map(s => <button key={s} className={scale === s ? "active" : ""} onClick={() => setScale(s)}>{s}×</button>)}</div>
+      <button className="link-btn" onClick={onClose} aria-label="Close"><X size={16} /> Close</button>
+    </div>
+    <div className="lightbox-body" onClick={e => e.stopPropagation()}>
+      <img src={src} alt={label} style={{ width: `${scale * 100}%`, maxWidth: "none" }} />
+    </div>
   </div>;
 }
 

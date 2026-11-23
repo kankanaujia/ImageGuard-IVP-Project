@@ -9,31 +9,10 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        7.0,
-        9.0,
-        10.0,
-        11.0,
-        12.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        18.0,
-        19.0,
-        20.0,
-        21.0,
-        22.0,
-        23.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 3.124,
+    "processing_seconds": 5.329,
     "min_ssim": 0.22899388108402785,
     "errors": []
   },
@@ -47,14 +26,10 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        5.0,
-        10.0,
-        13.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.78,
+    "processing_seconds": 4.754,
     "min_ssim": 0.2327247162431487,
     "errors": []
   },
@@ -68,23 +43,7 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        5.0,
-        7.0,
-        10.0,
-        11.0,
-        12.0,
-        13.0,
-        15.0,
-        16.0,
-        18.0,
-        19.0,
-        20.0,
-        22.0
-      ],
+      "repeat": [],
       "motion": [
         4.0,
         8.0,
@@ -94,7 +53,7 @@
         22.0
       ]
     },
-    "processing_seconds": 3.023,
+    "processing_seconds": 5.512,
     "min_ssim": 0.2895269443899501,
     "errors": []
   },
@@ -108,27 +67,10 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
-        10.0,
-        11.0,
-        13.0,
-        17.0,
-        18.0,
-        21.0,
-        22.0,
-        23.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.959,
+    "processing_seconds": 5.48,
     "min_ssim": 0.14205596635237044,
     "errors": []
   },
@@ -142,22 +84,10 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        2.0,
-        4.0,
-        5.0,
-        6.0,
-        9.0,
-        11.0,
-        12.0,
-        14.0,
-        17.0,
-        19.0,
-        20.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.934,
+    "processing_seconds": 5.129,
     "min_ssim": 0.21294607135682544,
     "errors": []
   },
@@ -171,16 +101,10 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        9.0,
-        18.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 3.072,
+    "processing_seconds": 4.885,
     "min_ssim": 0.23646867910044428,
     "errors": []
   },
@@ -194,22 +118,10 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        4.0,
-        6.0,
-        8.0,
-        9.0,
-        11.0,
-        12.0,
-        13.0,
-        15.0,
-        16.0,
-        18.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.816,
+    "processing_seconds": 4.684,
     "min_ssim": 0.3118143975077562,
     "errors": []
   },
@@ -223,12 +135,10 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        8.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.908,
+    "processing_seconds": 5.785,
     "min_ssim": 0.2825621584833122,
     "errors": []
   },
@@ -242,15 +152,12 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        16.0
-      ],
+      "repeat": [],
       "motion": [
         14.0
       ]
     },
-    "processing_seconds": 2.912,
+    "processing_seconds": 5.061,
     "min_ssim": 0.4374115991509688,
     "errors": []
   },
@@ -264,26 +171,13 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        8.0,
-        10.0,
-        11.0,
-        12.0,
-        13.0,
-        15.0,
-        16.0,
-        19.0
-      ],
+      "repeat": [],
       "motion": [
         7.0,
         13.0
       ]
     },
-    "processing_seconds": 2.771,
+    "processing_seconds": 4.05,
     "min_ssim": 0.3085939221336544,
     "errors": []
   },
@@ -297,27 +191,7 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        2.0,
-        3.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
-        9.0,
-        11.0,
-        12.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0,
-        18.0,
-        19.0,
-        20.0,
-        21.0,
-        22.0
-      ],
+      "repeat": [],
       "motion": [
         4.0,
         8.0,
@@ -327,7 +201,7 @@
         22.0
       ]
     },
-    "processing_seconds": 2.81,
+    "processing_seconds": 5.015,
     "min_ssim": 0.3433638975546436,
     "errors": []
   },
@@ -341,14 +215,7 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        4.0,
-        6.0,
-        9.0,
-        10.0,
-        12.0
-      ],
+      "repeat": [],
       "motion": [
         3.0,
         5.0,
@@ -359,7 +226,7 @@
         15.0
       ]
     },
-    "processing_seconds": 2.049,
+    "processing_seconds": 3.841,
     "min_ssim": 0.3123383161403,
     "errors": []
   },
@@ -373,15 +240,10 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        4.0,
-        8.0,
-        10.0,
-        13.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.891,
+    "processing_seconds": 4.994,
     "min_ssim": 0.3398305836015303,
     "errors": []
   },
@@ -395,16 +257,10 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        6.0,
-        8.0,
-        14.0,
-        19.0,
-        21.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.617,
+    "processing_seconds": 5.123,
     "min_ssim": 0.2788851909529057,
     "errors": []
   },
@@ -418,19 +274,10 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        2.0,
-        6.0,
-        7.0,
-        10.0,
-        13.0,
-        14.0,
-        15.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.316,
+    "processing_seconds": 3.774,
     "min_ssim": 0.31730150884914765,
     "errors": []
   },
@@ -447,18 +294,13 @@
         10.0,
         12.0
       ],
-      "repeat": [
-        1.0,
-        3.0,
-        6.0,
-        17.0
-      ],
+      "repeat": [],
       "motion": [
         10.0,
         12.0
       ]
     },
-    "processing_seconds": 2.211,
+    "processing_seconds": 3.786,
     "min_ssim": 0.267872185271922,
     "errors": []
   },
@@ -472,29 +314,7 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
-        9.0,
-        10.0,
-        11.0,
-        12.0,
-        13.0,
-        14.0,
-        16.0,
-        17.0,
-        18.0,
-        20.0,
-        21.0,
-        22.0,
-        24.0
-      ],
+      "repeat": [],
       "motion": [
         6.0,
         12.0,
@@ -503,7 +323,7 @@
         24.0
       ]
     },
-    "processing_seconds": 2.656,
+    "processing_seconds": 5.342,
     "min_ssim": 0.23111429995089447,
     "errors": []
   },
@@ -520,27 +340,13 @@
         13.0,
         15.0
       ],
-      "repeat": [
-        1.0,
-        3.0,
-        6.0,
-        7.0,
-        8.0,
-        10.0,
-        12.0,
-        14.0,
-        16.0,
-        17.0,
-        19.0,
-        20.0,
-        21.0
-      ],
+      "repeat": [],
       "motion": [
         13.0,
         15.0
       ]
     },
-    "processing_seconds": 2.509,
+    "processing_seconds": 4.58,
     "min_ssim": 0.2959462626585831,
     "errors": []
   },
@@ -557,26 +363,13 @@
         5.0,
         7.0
       ],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        6.0,
-        9.0,
-        10.0,
-        11.0,
-        12.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0
-      ],
+      "repeat": [],
       "motion": [
         5.0,
         7.0
       ]
     },
-    "processing_seconds": 2.321,
+    "processing_seconds": 3.747,
     "min_ssim": 0.16474513544578145,
     "errors": []
   },
@@ -593,26 +386,7 @@
         8.0,
         10.0
       ],
-      "repeat": [
-        1.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        9.0,
-        11.0,
-        12.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0,
-        18.0,
-        19.0,
-        20.0,
-        21.0,
-        22.0
-      ],
+      "repeat": [],
       "motion": [
         3.0,
         5.0,
@@ -626,7 +400,7 @@
         21.0
       ]
     },
-    "processing_seconds": 2.513,
+    "processing_seconds": 4.968,
     "min_ssim": 0.2016966892851745,
     "errors": []
   },
@@ -643,13 +417,10 @@
         11.0,
         14.0
       ],
-      "repeat": [
-        5.0,
-        13.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.348,
+    "processing_seconds": 3.999,
     "min_ssim": 0.22277087535815246,
     "errors": []
   },
@@ -665,17 +436,10 @@
       "scene": [
         12.0
       ],
-      "repeat": [
-        3.0,
-        6.0,
-        7.0,
-        13.0,
-        14.0,
-        19.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.443,
+    "processing_seconds": 4.508,
     "min_ssim": 0.20946332244194452,
     "errors": []
   },
@@ -692,14 +456,12 @@
         5.0,
         8.0
       ],
-      "repeat": [
-        10.0
-      ],
+      "repeat": [],
       "motion": [
         5.0
       ]
     },
-    "processing_seconds": 1.951,
+    "processing_seconds": 3.524,
     "min_ssim": 0.22444200476443515,
     "errors": []
   },
@@ -716,18 +478,14 @@
         7.0,
         10.0
       ],
-      "repeat": [
-        12.0,
-        13.0,
-        15.0
-      ],
+      "repeat": [],
       "motion": [
         7.0,
         9.0,
         10.0
       ]
     },
-    "processing_seconds": 2.304,
+    "processing_seconds": 4.205,
     "min_ssim": 0.3015224763446809,
     "errors": []
   },
@@ -744,28 +502,13 @@
         12.0,
         14.0
       ],
-      "repeat": [
-        1.0,
-        3.0,
-        5.0,
-        7.0,
-        8.0,
-        9.0,
-        10.0,
-        11.0,
-        13.0,
-        15.0,
-        17.0,
-        18.0,
-        19.0,
-        21.0
-      ],
+      "repeat": [],
       "motion": [
         12.0,
         14.0
       ]
     },
-    "processing_seconds": 2.625,
+    "processing_seconds": 4.968,
     "min_ssim": 0.24785321683196537,
     "errors": []
   },
@@ -782,20 +525,13 @@
         15.0,
         17.0
       ],
-      "repeat": [
-        1.0,
-        2.0,
-        7.0,
-        9.0,
-        16.0,
-        19.0
-      ],
+      "repeat": [],
       "motion": [
         15.0,
         17.0
       ]
     },
-    "processing_seconds": 2.676,
+    "processing_seconds": 4.732,
     "min_ssim": 0.18337033264503033,
     "errors": []
   },
@@ -812,11 +548,7 @@
         9.0,
         11.0
       ],
-      "repeat": [
-        4.0,
-        12.0,
-        15.0
-      ],
+      "repeat": [],
       "motion": [
         6.0,
         9.0,
@@ -824,7 +556,7 @@
         16.0
       ]
     },
-    "processing_seconds": 2.156,
+    "processing_seconds": 3.767,
     "min_ssim": 0.2894176349800628,
     "errors": []
   },
@@ -841,17 +573,12 @@
         8.0,
         12.0
       ],
-      "repeat": [
-        4.0,
-        5.0,
-        16.0,
-        18.0
-      ],
+      "repeat": [],
       "motion": [
         12.0
       ]
     },
-    "processing_seconds": 2.585,
+    "processing_seconds": 4.933,
     "min_ssim": 0.200968136692396,
     "errors": []
   },
@@ -868,27 +595,13 @@
         7.0,
         11.0
       ],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        5.0,
-        6.0,
-        8.0,
-        9.0,
-        10.0,
-        12.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0
-      ],
+      "repeat": [],
       "motion": [
         7.0,
         11.0
       ]
     },
-    "processing_seconds": 2.022,
+    "processing_seconds": 3.549,
     "min_ssim": 0.21122451985357557,
     "errors": []
   },
@@ -905,19 +618,13 @@
         11.0,
         14.0
       ],
-      "repeat": [
-        3.0,
-        4.0,
-        6.0,
-        16.0,
-        17.0
-      ],
+      "repeat": [],
       "motion": [
         11.0,
         14.0
       ]
     },
-    "processing_seconds": 2.204,
+    "processing_seconds": 4.194,
     "min_ssim": 0.30205062268612665,
     "errors": []
   },
@@ -932,21 +639,17 @@
     "flags": {
       "scene": [],
       "repeat": [
-        2.0,
-        6.0,
-        7.0,
         9.0,
         10.0,
         11.0,
-        12.0,
-        15.0
+        12.0
       ],
       "motion": [
         5.0,
         14.0
       ]
     },
-    "processing_seconds": 1.888,
+    "processing_seconds": 3.936,
     "min_ssim": 0.3129835394322261,
     "errors": []
   },
@@ -961,27 +664,17 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
-        9.0,
         10.0,
         11.0,
         12.0,
-        13.0,
-        15.0
+        13.0
       ],
       "motion": [
         5.0,
         9.0
       ]
     },
-    "processing_seconds": 1.827,
+    "processing_seconds": 3.445,
     "min_ssim": 0.30692524009878214,
     "errors": []
   },
@@ -996,15 +689,12 @@
     "flags": {
       "scene": [],
       "repeat": [
-        5.0,
         6.0,
-        7.0,
-        11.0,
-        16.0
+        7.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.744,
+    "processing_seconds": 5.356,
     "min_ssim": 0.25850372122393395,
     "errors": []
   },
@@ -1019,16 +709,12 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        9.0,
         12.0,
-        13.0,
-        19.0,
-        21.0
+        13.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.744,
+    "processing_seconds": 5.123,
     "min_ssim": 0.3184032638047684,
     "errors": []
   },
@@ -1043,22 +729,8 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        5.0,
         6.0,
-        7.0,
-        8.0,
-        10.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0,
-        19.0,
-        20.0,
-        22.0
+        7.0
       ],
       "motion": [
         8.0,
@@ -1066,7 +738,7 @@
         18.0
       ]
     },
-    "processing_seconds": 2.596,
+    "processing_seconds": 5.291,
     "min_ssim": 0.34307481566499276,
     "errors": []
   },
@@ -1081,15 +753,8 @@
     "flags": {
       "scene": [],
       "repeat": [
-        2.0,
-        5.0,
-        6.0,
         7.0,
-        8.0,
-        10.0,
-        11.0,
-        15.0,
-        16.0
+        8.0
       ],
       "motion": [
         4.0,
@@ -1099,7 +764,7 @@
         18.0
       ]
     },
-    "processing_seconds": 2.266,
+    "processing_seconds": 3.984,
     "min_ssim": 0.3428557688566965,
     "errors": []
   },
@@ -1114,9 +779,6 @@
     "flags": {
       "scene": [],
       "repeat": [
-        5.0,
-        6.0,
-        7.0,
         9.0,
         10.0,
         11.0,
@@ -1126,7 +788,7 @@
         7.0
       ]
     },
-    "processing_seconds": 2.006,
+    "processing_seconds": 3.942,
     "min_ssim": 0.277927076216013,
     "errors": []
   },
@@ -1141,20 +803,8 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
-        10.0,
         11.0,
-        12.0,
-        16.0,
-        17.0,
-        18.0
+        12.0
       ],
       "motion": [
         4.0,
@@ -1163,7 +813,7 @@
         16.0
       ]
     },
-    "processing_seconds": 2.235,
+    "processing_seconds": 4.086,
     "min_ssim": 0.3658580204183477,
     "errors": []
   },
@@ -1178,21 +828,13 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        4.0,
-        6.0,
-        7.0,
-        9.0,
         10.0,
         11.0,
-        12.0,
-        16.0,
-        17.0,
-        21.0
+        12.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.557,
+    "processing_seconds": 4.205,
     "min_ssim": 0.3431542658119303,
     "errors": []
   },
@@ -1207,18 +849,12 @@
     "flags": {
       "scene": [],
       "repeat": [
-        2.0,
-        10.0,
-        12.0,
-        16.0,
         17.0,
-        18.0,
-        21.0,
-        22.0
+        18.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.807,
+    "processing_seconds": 5.129,
     "min_ssim": 0.22203091098782754,
     "errors": []
   },
@@ -1233,23 +869,14 @@
     "flags": {
       "scene": [],
       "repeat": [
-        3.0,
-        4.0,
         7.0,
         8.0,
         9.0,
-        10.0,
-        11.0,
-        13.0,
-        15.0,
-        17.0,
-        18.0,
-        20.0,
-        21.0
+        10.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.521,
+    "processing_seconds": 4.909,
     "min_ssim": 0.3693057530425044,
     "errors": []
   },
@@ -1264,29 +891,12 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
-        9.0,
         10.0,
-        11.0,
-        12.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0,
-        18.0,
-        20.0,
-        22.0
+        11.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.597,
+    "processing_seconds": 4.394,
     "min_ssim": 0.2613911322000024,
     "errors": []
   },
@@ -1301,30 +911,12 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        8.0,
-        9.0,
-        10.0,
         11.0,
-        12.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0,
-        18.0,
-        20.0,
-        21.0,
-        22.0,
-        23.0
+        12.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.689,
+    "processing_seconds": 5.007,
     "min_ssim": 0.27919251492032876,
     "errors": []
   },
@@ -1339,23 +931,12 @@
     "flags": {
       "scene": [],
       "repeat": [
-        1.0,
-        3.0,
-        5.0,
-        7.0,
         8.0,
-        9.0,
-        11.0,
-        12.0,
-        13.0,
-        14.0,
-        16.0,
-        17.0,
-        18.0
+        9.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.374,
+    "processing_seconds": 4.155,
     "min_ssim": 0.209454490466885,
     "errors": []
   },
@@ -1370,17 +951,12 @@
     "flags": {
       "scene": [],
       "repeat": [
-        5.0,
-        6.0,
-        10.0,
         11.0,
-        12.0,
-        13.0,
-        15.0
+        12.0
       ],
       "motion": []
     },
-    "processing_seconds": 2.267,
+    "processing_seconds": 4.028,
     "min_ssim": 0.23356362351524254,
     "errors": []
   },
@@ -1394,28 +970,12 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        3.0,
-        4.0,
-        8.0,
-        9.0,
-        11.0,
-        12.0,
-        13.0,
-        15.0,
-        16.0,
-        18.0,
-        19.0,
-        20.0,
-        21.0,
-        22.0
-      ],
+      "repeat": [],
       "motion": [
         14.0
       ]
     },
-    "processing_seconds": 2.35,
+    "processing_seconds": 4.957,
     "min_ssim": 0.28964899205229194,
     "errors": []
   },
@@ -1429,20 +989,13 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        3.0,
-        6.0,
-        7.0,
-        11.0,
-        13.0,
-        16.0
-      ],
+      "repeat": [],
       "motion": [
         8.0,
         14.0
       ]
     },
-    "processing_seconds": 2.242,
+    "processing_seconds": 4.336,
     "min_ssim": 0.23536164523956643,
     "errors": []
   },
@@ -1456,20 +1009,12 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        3.0,
-        5.0,
-        10.0,
-        12.0,
-        14.0,
-        17.0,
-        19.0
-      ],
+      "repeat": [],
       "motion": [
         13.0
       ]
     },
-    "processing_seconds": 2.284,
+    "processing_seconds": 4.568,
     "min_ssim": 0.17734311740471193,
     "errors": []
   },
@@ -1483,14 +1028,12 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        3.0
-      ],
+      "repeat": [],
       "motion": [
         7.0
       ]
     },
-    "processing_seconds": 2.697,
+    "processing_seconds": 4.992,
     "min_ssim": 0.20778310032623443,
     "errors": []
   },
@@ -1504,15 +1047,12 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        15.0
-      ],
+      "repeat": [],
       "motion": [
         9.0
       ]
     },
-    "processing_seconds": 2.18,
+    "processing_seconds": 3.929,
     "min_ssim": 0.3112709692039177,
     "errors": []
   },
@@ -1526,13 +1066,10 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        12.0,
-        16.0
-      ],
+      "repeat": [],
       "motion": []
     },
-    "processing_seconds": 2.311,
+    "processing_seconds": 4.545,
     "min_ssim": 0.31290310881911115,
     "errors": []
   },
@@ -1546,17 +1083,7 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        3.0,
-        4.0,
-        5.0,
-        7.0,
-        10.0,
-        11.0,
-        12.0,
-        13.0,
-        16.0
-      ],
+      "repeat": [],
       "motion": [
         4.0,
         8.0,
@@ -1565,7 +1092,7 @@
         15.0
       ]
     },
-    "processing_seconds": 1.802,
+    "processing_seconds": 3.168,
     "min_ssim": 0.331697952460651,
     "errors": []
   },
@@ -1579,17 +1106,12 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        5.0,
-        15.0,
-        18.0,
-        23.0
-      ],
+      "repeat": [],
       "motion": [
         6.0
       ]
     },
-    "processing_seconds": 2.523,
+    "processing_seconds": 5.502,
     "min_ssim": 0.3235725667691669,
     "errors": []
   },
@@ -1603,17 +1125,12 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        2.0,
-        11.0,
-        15.0,
-        17.0
-      ],
+      "repeat": [],
       "motion": [
         10.0
       ]
     },
-    "processing_seconds": 2.368,
+    "processing_seconds": 4.487,
     "min_ssim": 0.27052214575494965,
     "errors": []
   },
@@ -1627,26 +1144,12 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        3.0,
-        4.0,
-        6.0,
-        8.0,
-        9.0,
-        10.0,
-        11.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0
-      ],
+      "repeat": [],
       "motion": [
         5.0
       ]
     },
-    "processing_seconds": 1.923,
+    "processing_seconds": 3.946,
     "min_ssim": 0.28609177994791013,
     "errors": []
   },
@@ -1660,30 +1163,12 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        6.0,
-        7.0,
-        8.0,
-        11.0,
-        12.0,
-        14.0,
-        15.0,
-        17.0,
-        18.0,
-        20.0,
-        22.0,
-        23.0,
-        24.0
-      ],
+      "repeat": [],
       "motion": [
         9.0
       ]
     },
-    "processing_seconds": 2.37,
+    "processing_seconds": 5.075,
     "min_ssim": 0.14201362645430574,
     "errors": []
   },
@@ -1697,19 +1182,7 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        3.0,
-        5.0,
-        7.0,
-        11.0,
-        13.0,
-        14.0,
-        16.0,
-        17.0,
-        23.0,
-        24.0
-      ],
+      "repeat": [],
       "motion": [
         4.0,
         8.0,
@@ -1719,7 +1192,7 @@
         21.0
       ]
     },
-    "processing_seconds": 2.234,
+    "processing_seconds": 5.102,
     "min_ssim": 0.26780538842098833,
     "errors": []
   },
@@ -1733,27 +1206,12 @@
     "span": 4,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        3.0,
-        4.0,
-        5.0,
-        7.0,
-        8.0,
-        10.0,
-        12.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0,
-        19.0,
-        20.0
-      ],
+      "repeat": [],
       "motion": [
         6.0
       ]
     },
-    "processing_seconds": 2.225,
+    "processing_seconds": 4.548,
     "min_ssim": 0.1428365480769304,
     "errors": []
   },
@@ -1767,21 +1225,7 @@
     "span": 3,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        3.0,
-        5.0,
-        6.0,
-        8.0,
-        10.0,
-        13.0,
-        14.0,
-        15.0,
-        18.0,
-        20.0,
-        21.0,
-        23.0
-      ],
+      "repeat": [],
       "motion": [
         5.0,
         9.0,
@@ -1790,7 +1234,7 @@
         22.0
       ]
     },
-    "processing_seconds": 2.049,
+    "processing_seconds": 5.001,
     "min_ssim": 0.24525489288719096,
     "errors": []
   },
@@ -1804,24 +1248,7 @@
     "span": 2,
     "flags": {
       "scene": [],
-      "repeat": [
-        1.0,
-        2.0,
-        3.0,
-        4.0,
-        5.0,
-        6.0,
-        7.0,
-        8.0,
-        9.0,
-        11.0,
-        12.0,
-        13.0,
-        14.0,
-        15.0,
-        16.0,
-        17.0
-      ],
+      "repeat": [],
       "motion": [
         4.0,
         8.0,
@@ -1829,7 +1256,7 @@
         14.0
       ]
     },
-    "processing_seconds": 1.472,
+    "processing_seconds": 3.527,
     "min_ssim": 0.2926327402980965,
     "errors": []
   }

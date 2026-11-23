@@ -12,6 +12,7 @@ $pages = [ordered]@{
     "overview"      = @("$base/", 1400, 1000)
     "investigation" = @("$base/investigation", 1400, 1000)
     "image"         = @("$base/image-analysis?id=$ImageId", 1400, 3400)
+    "slider"        = @("$base/image-analysis?id=$ImageId&view=orb&mode=slider", 1400, 2000)
     "video"         = @("$base/video-analysis?id=$VideoId&t=$VideoTime", 1400, 3600)
     "reports"       = @("$base/reports?id=$ImageId", 1400, 2400)
 }
