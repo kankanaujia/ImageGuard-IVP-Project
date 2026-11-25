@@ -1,14 +1,16 @@
-"""Crop the raw full-page screenshots (screenshots.ps1) into the report's figure images."""
+"""Crop the raw full-page screenshots (screenshots.js) into the report's and deck's figure images."""
 from pathlib import Path
 from PIL import Image
 
 HERE = Path(__file__).resolve().parent / "screenshots"
 CROPS = {  # output name: (raw page, (left, top, right, bottom)) in screenshot pixels
+    "login.png": ("login", (470, 150, 930, 650)),
     "overview.png": ("overview", (0, 0, 1400, 500)),
     # investigation.png (batch queue in progress) is captured from the live browser, since it needs files queued
     "image_analysis.png": ("image", (0, 0, 1400, 930)),
-    "image_slider.png": ("slider", (515, 500, 1370, 1215)),
-    "image_cards.png": ("image", (530, 945, 1370, 1345)),
+    "image_ghost.png": ("ghost", (545, 497, 1362, 868)),
+    "image_slider.png": ("slider", (545, 463, 1362, 1202)),
+    "image_cards.png": ("ghost", (545, 1345, 1362, 1880)),
     "video_analysis.png": ("video", (0, 0, 1400, 920)),
     "video_frames.png": ("video", (540, 930, 1370, 1640)),
     "reports.png": ("reports", (0, 0, 1400, 1000)),

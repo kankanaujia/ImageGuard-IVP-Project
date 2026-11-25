@@ -1,0 +1,3 @@
+# Python dependencies of the ImageGuard back end (the front end's are in frontend/package.json).
+#   python -m pip install -r requirements.txt
+-r backend/requirements.txt

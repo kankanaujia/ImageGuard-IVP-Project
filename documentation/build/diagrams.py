@@ -55,17 +55,17 @@ def mid(b, side):
 def architecture():
     fig, ax = canvas(10, 6.4)
     group(ax, 1, 46, 98, 16, "Presentation layer (Next.js / React, browser)")
-    pages = ["Overview\ndashboard", "New\ninvestigation", "Image\nforensics", "Video\nforensics", "Reports &\nhistory"]
-    pb = [box(ax, 4 + i * 19, 48, 16, 9, p, "ui", 8.5) for i, p in enumerate(pages)]
+    pages = ["Sign in /\ncreate account", "Overview\ndashboard", "New\ninvestigation", "Image\nforensics", "Video\nforensics", "Reports &\nhistory"]
+    pb = [box(ax, 3 + i * 16, 48, 14, 9, p, "ui", 8) for i, p in enumerate(pages)]
     group(ax, 1, 26, 98, 17, "Application layer (FastAPI, Python)", where="top-right")
-    api = box(ax, 4, 28, 26, 9.5, "REST API\n/api/image|video/analyze\n/api/investigations …", "api", 8)
+    api = box(ax, 4, 28, 26, 9.5, "REST API + accounts\n/api/auth · /api/*/analyze\nsession cookie, own cases only", "api", 8)
     val = box(ax, 35, 28, 26, 9.5, "Validation & integrity\nextension · size · content\nSHA-256 at intake", "api", 8)
     eng = box(ax, 66, 28, 30, 9.5, "Background analysis jobs\nchecks run independently,\nprogress reported per stage", "proc", 8)
     group(ax, 1, 3, 62, 20, "Processing layer (OpenCV, scikit-image, Pillow, ImageHash)", where="bottom-left")
-    box(ax, 4, 8, 27, 12, "Image checks\nELA + heat map · ORB copy-move\nnoise heat map · compression\nhistogram · EXIF", "img", 8)
+    box(ax, 4, 8, 27, 12, "Image checks\nELA + heat map · ORB copy-move\nJPEG ghost map · compression\nhistory · EXIF", "img", 8)
     box(ax, 34, 8, 27, 12, "Video checks\nframe sampling · pHash + motion\nSSIM · scene histogram\nFarnebäck optical flow", "vid", 8)
     group(ax, 66, 3, 33, 20, "Storage layer", where="bottom-right")
-    box(ax, 68, 14, 14, 6.5, "SQLite\ninvestigations", "store", 7.5)
+    box(ax, 68, 14, 14, 6.5, "SQLite: users,\nsessions, cases", "store", 7.5)
     box(ax, 84, 14, 13, 6.5, "uploads/\n(originals)", "store", 7.5)
     box(ax, 68, 6.5, 14, 6.5, "outputs/\nvisualizations", "store", 7.5)
     box(ax, 84, 6.5, 13, 6.5, "reports/\nPDF (ReportLab)", "store", 7.5)
@@ -80,14 +80,14 @@ def architecture():
 def workflow():
     fig, ax = canvas(10, 10)
     steps = [
-        ("Investigator selects an image or video", "ui"),
+        ("Investigator signs in, then selects an image or video", "ui"),
         ("Client check: extension and 100 MB limit", "ui"),
         ("POST multipart upload to /api/{image|video}/analyze", "api"),
         ("Stream to disk under a random name (UUID); enforce size", "api"),
         ("Validate content (Pillow decode / OpenCV open)", "api"),
         ("Compute SHA-256 of the stored original", "api"),
         ("Background job runs the checks; progress reported per stage", "proc"),
-        ("Save result JSON in SQLite; write visualizations", "store"),
+        ("Save result JSON in SQLite under the investigator's account", "store"),
         ("Generate PDF report (retried on download if it fails)", "store"),
         ("UI polls the job, then shows metrics, maps, charts and notes", "ui"),
     ]
@@ -108,11 +108,10 @@ def pipelines():
     src = box(ax, 2, 22, 13, 9, "Image\n(JPG, PNG,\nTIFF, BMP, WebP)", "ui", 8)
     checks = [("ELA at JPEG Q90 + block heat map\n(robust z of 16×16 block means)", "img"),
               ("ORB self-match, oriented + de-duplicated,\nrepeated RANSAC; flag: ≥5 matches, ≥40 px", "img"),
-              ("Noise heat map: wavelet σ = median|HH|/0.6745\nper block, robust z", "img"),
+              ("JPEG ghosts: re-save at Q50–95, per-block\ndip below typical block, robust z", "img"),
               ("Compression: quantization tables →\nquality, IJG vs custom tables", "img"),
-              ("RGB histograms (256 bins)", "img"),
               ("EXIF tags (Pillow)", "img")]
-    cb = [box(ax, 24, 44 - i * 8.2, 44, 6.6, t, c, 7.2) for i, (t, c) in enumerate(checks)]
+    cb = [box(ax, 24, 43 - i * 9.4, 44, 7.2, t, c, 7.4) for i, (t, c) in enumerate(checks)]
     out = box(ax, 76, 20, 22, 13, "Per-check result\n(status, metrics,\nvisualization, caveat)\n+ indicator summary", "proc", 7.5)
     for b in cb:
         arrow(ax, mid(src, "r"), mid(b, "l")); arrow(ax, mid(b, "r"), mid(out, "l"))
@@ -161,11 +160,11 @@ def use_cases():
     ax.plot([10, 10], [34, 25], color=C["edge"]); ax.plot([5, 15], [31, 31], color=C["edge"])
     ax.plot([10, 6], [25, 18], color=C["edge"]); ax.plot([10, 14], [25, 18], color=C["edge"])
     ax.text(10, 14, "Investigator", ha="center", fontsize=9, family=FONT)
-    cases = ["Upload image / video evidence", "View per-check analysis", "Compare original with visualizations",
+    cases = ["Sign in / create an account", "Upload image / video evidence", "View per-check analysis", "Compare original with visualizations",
              "Inspect video timeline & frames", "Verify evidence integrity (SHA-256)", "Download PDF report", "Browse investigation history"]
     for i, c in enumerate(cases):
-        y = 48 - i * 6.6
-        ax.add_patch(Ellipse((58, y), 46, 5.4, fc=C["ui"], ec=C["edge"]))
+        y = 49 - i * 5.9
+        ax.add_patch(Ellipse((58, y), 46, 4.9, fc=C["ui"], ec=C["edge"]))
         ax.text(58, y, c, ha="center", va="center", fontsize=8.2, family=FONT)
         ax.plot([16, 35], [28, y], color="#64748b", lw=0.8)
     save(fig, "fig_use_cases")
@@ -175,15 +174,19 @@ def use_cases():
 def data_model():
     fig, ax = canvas(9, 4.6)
     fields = ["id : UUID (PK)", "media_type : image | video", "original_name : text", "stored_name : UUID + extension",
-              "mime_type : text", "size_bytes : integer", "sha256 : 64 hex chars", "created_at : UTC timestamp", "result_json : full analysis (JSON)", "notes : investigator's notes"]
+              "mime_type : text", "size_bytes : integer", "sha256 : 64 hex chars", "created_at : UTC timestamp", "result_json : full analysis (JSON)", "notes : investigator's notes", "owner_id : FK → User"]
     box(ax, 4, 41, 34, 4.5, "Investigation (SQLite table)", "api", 9, True, "square,pad=0.2")
     for i, f in enumerate(fields):
-        box(ax, 4, 37 - i * 3.6, 34, 3.6, f, "white", 7.6, style="square,pad=0.2")
-    notes = [("uploads/{stored_name}", "original evidence, never modified"), ("outputs/{id}/", "ela.png, ela_map.png, orb.png, noise_map.png, histogram.png,\nssim.png, flow.png, frames/frame_*.jpg, frames/flow_*.jpg"),
+        box(ax, 4, 37 - i * 3.3, 34, 3.3, f, "white", 7.4, style="square,pad=0.2")
+    notes = [("uploads/{stored_name}", "original evidence, never modified"), ("outputs/{id}/", "ela.png, ela_map.png, orb.png, ghost_map.png,\nssim.png, flow.png, frames/frame_*.jpg, frames/flow_*.jpg"),
              ("reports/{id}-v2.pdf", "generated PDF report")]
     for i, (k, v) in enumerate(notes):
-        b = box(ax, 45, 34 - i * 12, 43, 9.5, f"{k}\n{v}", "store", 7.0)
-        arrow(ax, (38.4, 30 - i * 6), mid(b, "l"))
+        b = box(ax, 45, 22.5 - i * 9.2, 43, 7.2, f"{k}\n{v}", "store", 7.0)
+        arrow(ax, (38.4, 22 - i * 6), mid(b, "l"))
+    box(ax, 45, 41, 20, 4.5, "User", "api", 8.5, True, "square,pad=0.2")
+    box(ax, 45, 33, 20, 8, "id (PK) · username\npassword_hash (PBKDF2)\nis_admin · created_at", "white", 7.0, style="square,pad=0.2")
+    box(ax, 68, 41, 20, 4.5, "Session", "api", 8.5, True, "square,pad=0.2")
+    box(ax, 68, 33, 20, 8, "token_hash (PK, SHA-256)\nuser_id → User\nexpires_at (7 days)", "white", 7.0, style="square,pad=0.2")
     save(fig, "fig_data_model")
 
 
@@ -192,7 +195,7 @@ def wbs():
     fig, ax = canvas(10, 5.4)
     root = box(ax, 38, 44, 24, 7, "ImageGuard", "api", 10, True)
     branches = [("1 Research", ["1.1 Literature survey", "1.2 Technique selection", "1.3 Dataset selection"]),
-                ("2 Backend", ["2.1 API & validation", "2.2 Image checks", "2.3 Video checks", "2.4 Storage & PDF"]),
+                ("2 Backend", ["2.1 API, validation, accounts", "2.2 Image checks", "2.3 Video checks", "2.4 Storage & PDF"]),
                 ("3 Frontend", ["3.1 Upload flow", "3.2 Analysis pages", "3.3 Reports & history"]),
                 ("4 Evaluation", ["4.1 Unit tests", "4.2 CASIA v2.0 run", "4.3 Video benchmark"]),
                 ("5 Documentation", ["5.1 Report", "5.2 Presentation"])]
@@ -215,8 +218,8 @@ def gantt():
              ("Image forensic checks", "2026-09-21", "2026-10-18", "2"),
              ("Video forensic checks", "2026-10-05", "2026-11-01", "2"),
              ("Frontend pages", "2026-10-12", "2026-11-15", "3"),
-             ("Testing & evaluation (CASIA, video)", "2026-11-02", "2026-11-29", "4"),
-             ("Report & presentation", "2026-11-16", "2026-12-06", "5")]
+             ("Testing & evaluation (CASIA, video)", "2026-11-02", "2026-11-25", "4"),
+             ("Report & presentation", "2026-11-16", "2026-11-29", "5")]
     colours = {"1": "#93c5fd", "2": "#86efac", "3": "#fcd34d", "4": "#fca5a5", "5": "#c4b5fd"}
     fig, ax = plt.subplots(figsize=(10, 3.8))
     d = lambda s: dt.date.fromisoformat(s)

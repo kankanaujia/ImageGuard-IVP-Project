@@ -110,7 +110,7 @@ backend\.venv\Scripts\python.exe documentation\build\build_report.py
 powershell -ExecutionPolicy Bypass -File documentation\build\render_word.ps1 -Docx documentation\ImageGuard_Project_Report.docx
 ```
 
-`screenshots.ps1` and `crop_screenshots.py` recapture the app screenshots (both servers must be running).
+`node screenshots.js --user <name> --password <pw> --image <id> --splice <id> --video <id> --time 5` and `crop_screenshots.py` recapture the app screenshots with headless Edge (both servers must be running; the script signs in through the API, so use a demo account on a demo data folder).
 
 The presentation (`documentation/ImageGuard_Presentation.pptx`) is built the same way (run `npm install` in `documentation/build` once):
 
