@@ -4,10 +4,12 @@ ImageGuard is a local web application for explainable image and video forensic s
 
 ## Features
 
-- **Images:** error level analysis with a localised block heat map, ORB copy-move detection (repeated RANSAC, rule tuned on held-out CASIA data), noise-consistency heat map, JPEG compression history, colour histograms and EXIF.
+- **Images:** error level analysis with a localised block heat map, ORB copy-move detection (repeated RANSAC, rule tuned on held-out CASIA data), JPEG ghost map for spliced regions (Farid 2009), JPEG compression history and EXIF.
 - **Videos:** frame sampling, motion-confirmed repeated frames (perceptual hash + optical flow), SSIM continuity, scene-change detection and full-video optical flow with robust motion-spike detection.
 - **Evidence handling:** originals stored unchanged under random names, SHA-256 at intake, one-click re-verification, complete deletion.
 - **Workflow:** background analysis with live progress, batch upload of many files or a folder, side-by-side or wipe-slider comparison with zoom, case notes, readable PDF reports.
+
+- **Accounts:** each analyst signs in and sees only the investigations they ran. Passwords are salted PBKDF2-SHA256 hashes; sessions are HttpOnly cookies valid for 7 days. The first account created becomes the admin and takes over any investigations made before accounts existed, so Kanishka should create the first account on an existing install.
 
 ## Architecture
 
@@ -118,7 +120,8 @@ cd documentation\build; node build_deck.js
 
 ## API
 
-- `GET /`, `/api/health`, `/api/system-info`
+- `GET /`, `/api/health`, `/api/system-info` (public; every other endpoint needs a signed-in session and only returns the caller's own investigations)
+- `POST /api/auth/register`, `/api/auth/login` (JSON `{"username": "...", "password": "..."}`; sets the session cookie), `POST /api/auth/logout`, `GET /api/auth/me`
 - `POST /api/image/analyze`, `/api/video/analyze` (multipart field `file`; add `?background=true` to get a job id at once)
 - `GET /api/jobs/{job_id}`: stage, progress and resulting investigation id of a background analysis
 - `GET /api/investigations`, `/api/investigations/{id}`, `/api/investigations/{id}/verify`
@@ -129,4 +132,4 @@ cd documentation\build; node build_deck.js
 
 ## Interpretation and limits
 
-ELA is sensitive to recompression and format conversion; ORB repeat matches can come from natural textures. Noise measurements vary with image content and processing. Video sampling may miss short events, while scene changes and repeated frames are common. The global ELA peak mostly reflects how a file was last saved; the ELA heat map is the better guide to *where* an edit may be. The noise heat map did not localise edits on JPEG-compressed CASIA images. Repeated frames are expected in genuinely static scenes. Review original media and context; no score is presented as a manipulation probability. Uploads are capped at 100 MiB; two analyses run at a time.
+ELA is sensitive to recompression and format conversion; ORB repeat matches can come from natural textures. JPEG ghosts only appear when the pasted content was saved at a lower quality than the final image, and smooth or saturated areas can also stand out. Video sampling may miss short events, while scene changes and repeated frames are common. The global ELA peak mostly reflects how a file was last saved; the ELA heat map is the better guide to *where* an edit may be. Repeated frames are expected in genuinely static scenes. Review original media and context; no score is presented as a manipulation probability. Uploads are capped at 100 MiB; two analyses run at a time.

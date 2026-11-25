@@ -43,3 +43,6 @@ export interface VideoResult {
 /** A background analysis job (POST ...?background=true, then GET /api/jobs/{id}). */
 export interface Job { id:string; kind:"image"|"video"; original_name:string; status:"queued"|"running"|"done"|"error"; stage:string; progress:number;
   investigation_id:string|null; error:string|null }
+
+/** The signed-in analyst (GET /api/auth/me). The first account created is the admin. */
+export interface User { id:number; username:string; is_admin:boolean }

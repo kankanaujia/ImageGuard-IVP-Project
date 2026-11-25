@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Download, FileText, Loader2, ShieldAlert, ShieldCheck, StickyNote, Trash2, Upload } from "lucide-react";
-import { analyseFile, apiUrl, deleteInvestigation, getInvestigation, getInvestigations, saveNotes } from "@/services/api";
+import { analyseFile, apiUrl, deleteInvestigation, getInvestigation, getInvestigations, saveNotes, verifyIntegrity } from "@/services/api";
 import type { AlgorithmStatus, Investigation, InvestigationSummary } from "@/types/api";
 
 export type Progress = { fraction: number; stage: string } | null;
@@ -114,7 +114,7 @@ export function VerifyIntegrity({ id }: { id: string }) {
   useEffect(() => setState("idle"), [id]);
   async function check() {
     setState("checking");
-    try { const r = await (await fetch(apiUrl(`/api/investigations/${id}/verify`))).json(); setState(r.integrity_verified ? "ok" : "changed"); }
+    try { const r = await verifyIntegrity(id); setState(r.integrity_verified ? "ok" : "changed"); }
     catch { setState("error"); }
   }
   if (state === "ok") return <span className="verify ok"><CheckCircle2 size={13} /> Unchanged since intake</span>;

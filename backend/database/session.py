@@ -10,8 +10,11 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 def init_db() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(bind=engine)
-    # Lightweight migration for databases created before case notes existed.
+    # Lightweight migrations for databases created before case notes and accounts existed.
     columns = {c["name"] for c in inspect(engine).get_columns("investigations")}
-    if "notes" not in columns:
-        with engine.begin() as connection:
+    with engine.begin() as connection:
+        if "notes" not in columns:
             connection.execute(text("ALTER TABLE investigations ADD COLUMN notes TEXT NOT NULL DEFAULT ''"))
+        if "owner_id" not in columns:
+            connection.execute(text("ALTER TABLE investigations ADD COLUMN owner_id INTEGER REFERENCES users(id)"))
+            connection.execute(text("CREATE INDEX IF NOT EXISTS ix_investigations_owner_id ON investigations (owner_id)"))

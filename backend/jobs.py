@@ -24,11 +24,11 @@ def _prune() -> None:
         _jobs.pop(job_id, None)
 
 
-def submit(kind: str, original_name: str, work: Callable[[Callable[[float, str], None]], str]) -> dict:
+def submit(kind: str, original_name: str, work: Callable[[Callable[[float, str], None]], str], owner_id: int | None = None) -> dict:
     """Queue `work(progress)`; it must return the new investigation id."""
     job_id = str(uuid.uuid4())
     job = {"id": job_id, "kind": kind, "original_name": original_name, "status": "queued", "stage": "Waiting to start",
-           "progress": 0.0, "investigation_id": None, "error": None, "created_at": time.time(), "finished_at": None}
+           "progress": 0.0, "investigation_id": None, "error": None, "created_at": time.time(), "finished_at": None, "owner_id": owner_id}
     with _lock:
         _prune()
         _jobs[job_id] = job

@@ -1,4 +1,4 @@
-"""End-to-end tests of the REST API, run against a temporary data folder."""
+"""End-to-end tests of the REST API, run against a temporary data folder (signed in as one analyst)."""
 import importlib
 import time
 from pathlib import Path
@@ -13,12 +13,13 @@ from fastapi.testclient import TestClient
 def api(tmp_path, monkeypatch):
     """A fresh app whose database and evidence folders live in tmp_path."""
     monkeypatch.setenv("IMAGEGUARD_DATA_DIR", str(tmp_path))
-    import backend.config, backend.database.session, backend.jobs, backend.main
-    for module in (backend.config, backend.database.session, backend.jobs, backend.main):
+    import backend.config, backend.database.session, backend.jobs, backend.auth, backend.main
+    for module in (backend.config, backend.database.session, backend.jobs, backend.auth, backend.main):
         importlib.reload(module)
     with TestClient(backend.main.app) as client:
         client.data_dir = tmp_path
         client.main = backend.main
+        assert client.post("/api/auth/register", json={"username": "analyst", "password": "correct-horse"}).status_code == 201
         yield client
 
 
