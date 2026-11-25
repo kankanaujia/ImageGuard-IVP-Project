@@ -1,4 +1,4 @@
-"""Tests for the compression check, the localised ELA / noise maps and motion-confirmed repeats."""
+"""Tests for the compression check, the ELA heat map, JPEG ghosts and motion-confirmed repeats."""
 import io
 from pathlib import Path
 
@@ -9,7 +9,7 @@ from PIL import Image
 from backend.processing.analysis_engine import confirm_repeats
 from backend.processing.image.compression import analyze_compression
 from backend.processing.image.ela import analyze_ela
-from backend.processing.image.noise_analysis import analyze_noise
+from backend.processing.image.jpeg_ghost import analyze_ghost, ghost_block_scores
 
 
 def textured(h=256, w=320, seed=0) -> np.ndarray:
@@ -42,17 +42,19 @@ def test_ela_map_points_at_region_with_different_compression(tmp_path: Path):
     assert 96 <= y * 16 + 8 < 160 and 160 <= x * 16 + 8 < 240   # strongest block lies inside the patch
 
 
-def test_noise_map_points_at_region_with_different_noise(tmp_path: Path):
-    rng = np.random.default_rng(2)
-    image = np.clip(textured(seed=3).astype(float) + rng.normal(0, 2, (256, 320, 3)), 0, 255)
-    image[64:128, 192:272] += rng.normal(0, 18, (64, 80, 3))      # a much noisier pasted region
-    path = tmp_path / "noisy.png"; cv2.imwrite(str(path), np.clip(image, 0, 255).astype(np.uint8))
-    result = analyze_noise(path, tmp_path / "noise.png", map_output=tmp_path / "noise_map.png")
-    assert result["block_z_max_abs"] > 3.5 and 0 < result["unusual_block_share"] < 0.2
-    from backend.processing.image.noise_analysis import noise_block_z
-    z = np.abs(noise_block_z(cv2.cvtColor(np.clip(image, 0, 255).astype(np.uint8), cv2.COLOR_BGR2GRAY)))
+def test_jpeg_ghost_finds_region_saved_at_another_quality(tmp_path: Path):
+    def jpeg(img, q):
+        buf = io.BytesIO(); Image.fromarray(img).save(buf, "JPEG", quality=q); return np.array(Image.open(buf).convert("RGB"))
+    host, donor = textured(seed=1), jpeg(textured(seed=2), 60)     # the donor was saved at quality 60
+    composite = host.copy(); composite[96:176, 160:256] = donor[96:176, 160:256]
+    final = jpeg(composite, 92)                                     # the composite is saved at 92
+    path = tmp_path / "composite.png"; Image.fromarray(final).save(path)
+    result = analyze_ghost(path, tmp_path / "ghost_map.png")
+    assert (tmp_path / "ghost_map.png").exists() and result["block_z_max"] > 3.5 and result["ghost_quality"] == 60
+    from backend.processing.image.heatmap import robust_z
+    z = robust_z(ghost_block_scores(Image.fromarray(final))[0])
     y, x = np.unravel_index(np.argmax(z), z.shape)
-    assert 64 <= y * 16 + 8 < 128 and 192 <= x * 16 + 8 < 272
+    assert 96 <= y * 16 + 8 < 176 and 160 <= x * 16 + 8 < 256       # strongest block lies inside the pasted region
 
 
 def test_repeats_need_both_similar_hash_and_no_motion():

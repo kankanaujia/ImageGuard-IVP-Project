@@ -30,9 +30,8 @@ WIDTH = A4[0] - 36 * mm
 CHECK_TEXT = {
     "ela": ("Error level analysis (ELA)", "Re-saves the image as JPEG (quality 90) and shows the per-pixel difference. The heat map compares each 16x16 block with the rest of the image; bright blocks recompress differently from their surroundings."),
     "orb": ("Copy-move detection (ORB + RANSAC)", "Matches ORB keypoints within the image and keeps groups that agree on one shift/rotation. Lines join matched points (green = source, red = copy)."),
-    "noise": ("Noise consistency", "Estimates the local noise level of each block. Bright blocks have a noise level unlike the rest of the image, as pasted content from another source often does."),
+    "ghost": ("JPEG ghosts (splicing)", "Re-saves the image at JPEG qualities 50 to 95. A region pasted from another JPEG matches one of those qualities unusually well (a ghost); bright blocks in the map do."),
     "compression": ("Compression history", "Reads the JPEG quantization tables, which record how the file was last saved."),
-    "histogram": ("Colour histogram", "Pixel counts per brightness value; gaps or spikes suggest contrast or levels adjustments."),
     "metadata": ("Metadata (EXIF)", "Camera, software and date tags embedded in the file."),
     "frame_hashing": ("Repeated frames (perceptual hash)", "Neighbouring sampled frames that look nearly identical and show almost no motion between them (frozen or looped footage)."),
     "ssim": ("Frame similarity (SSIM)", "Structural similarity of each sampled frame to the previous one; sharp dips mark cuts or sudden changes."),
@@ -95,7 +94,7 @@ def mmss(t: float) -> str:
 def image_sections(result: dict, artifacts: Path | None, story: list) -> None:
     alg = result.get("algorithms", {})
     art = lambda name: (artifacts / name) if artifacts and name else None
-    for key in ("ela", "orb", "noise", "compression", "histogram", "metadata"):
+    for key in ("ela", "orb", "ghost", "compression", "metadata"):
         v = alg.get(key)
         if not v: continue
         title, what = CHECK_TEXT[key]
@@ -117,20 +116,16 @@ def image_sections(result: dict, artifacts: Path | None, story: list) -> None:
             flagged = v.get("flagged", v.get("candidate_matches", 0) >= 4)
             rows.append(("Result", "Flagged for review: a group of matches consistent with a copied region" if flagged else "Not flagged"))
             visuals = pictures_row([art(v.get("visualization"))], ["Matched keypoints"], max_h=80 * mm)
-        elif key == "noise":
-            if "block_z_max_abs" in v:
-                rows = [("Most unusual block", f"{fmt(v['block_z_max_abs'])} robust deviations from the image median"),
-                        ("Share of unusual blocks", f"{100 * v['unusual_block_share']:.1f}%")]
-            rows += [("Residual mean / std", f"{fmt(v.get('residual_mean'))} / {fmt(v.get('residual_std'))}")]
-            visuals = pictures_row([art(v.get("visualization")), art(v.get("map_visualization"))], ["Noise residual", "Noise consistency heat map"])
+        elif key == "ghost":
+            rows = [("Most unusual block", f"{fmt(v.get('block_z_max'))} robust deviations above the image median"),
+                    ("Share of unusual blocks", f"{100 * v.get('unusual_block_share', 0):.1f}%"),
+                    ("Quality of the strongest ghost", f"~{v['ghost_quality']}" if v.get("ghost_quality") else "none")]
+            visuals = pictures_row([art(v.get("map_visualization"))], ["JPEG ghost heat map"], max_h=70 * mm)
         elif key == "compression":
             if v.get("is_jpeg") and "estimated_quality" in v:
                 rows = [("Estimated JPEG quality", f"≈ {fmt(v['estimated_quality'], 0)}"), ("Standard IJG tables", "Yes" if v.get("standard_ijg_tables") else "No"),
                         ("Chroma subsampling", fmt(v.get("chroma_subsampling"))), ("Progressive", "Yes" if v.get("progressive") else "No")]
             for o in v.get("observations", []): block.append(P("• " + escape(o), "small"))
-        elif key == "histogram":
-            rows = [("Grey mean / spread", f"{fmt(v.get('grayscale_mean'), 1)} / {fmt(v.get('grayscale_std'), 1)}")]
-            visuals = pictures_row([art(v.get("visualization"))], ["RGB histogram"], max_h=55 * mm)
         elif key == "metadata":
             rows = [("Format / size", f"{v.get('format')} · {v.get('width')} x {v.get('height')} · {v.get('mode')}")]
             exif = v.get("exif") or {}

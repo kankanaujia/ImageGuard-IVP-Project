@@ -1,6 +1,5 @@
 "use client";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Suspense, useEffect, useState } from "react";
 import { X, ZoomIn } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Shell } from "@/components/shell";
@@ -23,7 +22,7 @@ function ImageAnalysis() {
 
 function ImageReport({ item, onDelete }: { item: Investigation<ImageResult>; onDelete: () => Promise<void> }) {
   const r = item.result;
-  const { ela, orb, noise, compression, histogram, metadata } = r.algorithms;
+  const { ela, orb, ghost, compression, metadata } = r.algorithms;
   const exifCount = metadata?.status === "completed" ? Object.keys(metadata.exif).length : undefined;
   const flagged = orb?.flagged ?? (orb?.candidate_matches ?? 0) >= 4;   // older results have no "flagged" field
   const pct = (v?: number) => v === undefined ? "—" : `${(100 * v).toFixed(1)}%`;
@@ -41,7 +40,7 @@ function ImageReport({ item, onDelete }: { item: Investigation<ImageResult>; onD
         note={orb?.status !== "completed" ? "check failed" : orb.geometrically_consistent_matches === 0 ? "No consistent match group"
           : `${orb.geometrically_consistent_matches} consistent matches${orb.copy_shift_px ? ` · ${fmt(orb.copy_shift_px, 0)} px apart` : ""}`} />
       <Metric label="ELA unusual blocks" value={pct(ela?.unusual_block_share)} note={ela?.block_z_max !== undefined ? `Strongest ${fmt(ela.block_z_max, 1)} deviations` : "Re-analyse for the heat map"} />
-      <Metric label="Noise unusual blocks" value={pct(noise?.unusual_block_share)} note={noise?.block_z_max_abs !== undefined ? `Strongest ${fmt(noise.block_z_max_abs, 1)} deviations` : "Re-analyse for the heat map"} />
+      <Metric label="JPEG ghost blocks" value={pct(ghost?.unusual_block_share)} note={ghost?.status === "completed" ? (ghost.ghost_quality ? `Strongest ghost at quality ~${ghost.ghost_quality}` : "No ghost region") : "Re-analyse for the ghost map"} />
       <Metric label="JPEG quality" value={compression?.estimated_quality !== undefined ? `≈ ${compression.estimated_quality}` : compression?.is_jpeg === false ? "Not JPEG" : "—"}
         note={compression?.standard_ijg_tables === undefined ? `${exifCount ?? "—"} EXIF tags` : compression.standard_ijg_tables ? "Standard (software) tables" : "Custom (camera) tables"} />
     </div>
@@ -71,13 +70,13 @@ function ImageReport({ item, onDelete }: { item: Investigation<ImageResult>; onD
         </>}
       </MethodCard>
 
-      <MethodCard title="Noise consistency" result={noise}
-        what="Estimates the local noise level of every 16×16 block from the finest wavelet detail band (median absolute coefficient ÷ 0.6745) and compares it with the rest of the image."
-        read="Bright blocks are much smoother or much noisier than the rest of the photo, as content pasted from another camera or processing chain often is. Sky, saturated highlights and blurred backgrounds can also stand out."
-        caveat={noise?.map_note ?? noise?.note}>
-        {noise?.status === "completed" && <>
-          {noise.unusual_block_share !== undefined && <div className="kv"><span>Unusual blocks (≥ 3.5 deviations)</span><span>{pct(noise.unusual_block_share)} · strongest {fmt(noise.block_z_max_abs, 1)}</span></div>}
-          <div className="kv"><span>Residual mean · σ</span><span>{fmt(noise.residual_mean)} · {fmt(noise.residual_std)}</span></div>
+      <MethodCard title="JPEG ghosts (splicing)" result={ghost}
+        what="Re-saves the image at JPEG qualities 50 to 95. Content pasted from another JPEG matches one of those qualities unusually well (a 'ghost'), which the rest of the image does not share (Farid, 2009)."
+        read="Bright blocks in the ghost map remember a different earlier compression than their surroundings, which is typical of spliced content. Smooth or saturated areas can also stand out, so compare with the photo."
+        caveat={ghost?.note}>
+        {ghost?.status === "completed" && <>
+          <div className="kv"><span>Unusual blocks (≥ 3.5 deviations)</span><span>{pct(ghost.unusual_block_share)} · strongest {fmt(ghost.block_z_max, 1)}</span></div>
+          <div className="kv"><span>Quality of the strongest ghost</span><span>{ghost.ghost_quality ? `~${ghost.ghost_quality}` : "none"}</span></div>
         </>}
       </MethodCard>
 
@@ -92,16 +91,6 @@ function ImageReport({ item, onDelete }: { item: Investigation<ImageResult>; onD
             <div className="kv"><span>Chroma subsampling · progressive</span><span>{compression.chroma_subsampling} · {compression.progressive ? "yes" : "no"}</span></div>
           </>}
           {compression.observations.map(o => <p className="subtle" key={o} style={{ margin: "6px 0" }}>• {o}</p>)}
-        </>}
-      </MethodCard>
-
-      <MethodCard title="Colour histogram" result={histogram}
-        what="Counts how many pixels have each brightness value (0–255) in the red, green and blue channels."
-        read="Gaps or regular comb-like spikes can come from contrast or levels adjustments. Clipping at 0 or 255 shows lost shadow or highlight detail."
-        caveat="Histograms describe the whole image and cannot locate an edit.">
-        {histogram?.status === "completed" && <>
-          <HistogramChart counts={histogram.rgb_counts} />
-          <div className="kv"><span>Grey mean · σ</span><span>{fmt(histogram.grayscale_mean, 1)} · {fmt(histogram.grayscale_std, 1)}</span></div>
         </>}
       </MethodCard>
 
@@ -128,10 +117,9 @@ function CompareViewer({ item }: { item: Investigation<ImageResult> }) {
   const ok = <T extends { status: string }>(v?: T) => v?.status === "completed" ? v : undefined;
   const views: View[] = [
     { key: "ela_map", label: "ELA heat map", file: ok(a.ela)?.map_visualization },
-    { key: "noise_map", label: "Noise heat map", file: ok(a.noise)?.map_visualization },
+    { key: "ghost_map", label: "JPEG ghost map", file: ok(a.ghost)?.map_visualization },
     { key: "orb", label: "Copy-move matches", file: ok(a.orb)?.visualization },
     { key: "ela", label: "ELA difference", file: ok(a.ela)?.visualization },
-    { key: "noise", label: "Noise residual", file: ok(a.noise)?.visualization },
   ].filter(v => v.file);
   // ?view=orb&mode=slider opens a specific comparison (shareable deep link)
   const params = useSearchParams();
@@ -192,23 +180,5 @@ function ZoomDialog({ src, label, onClose }: { src: string; label: string; onClo
     <div className="lightbox-body" onClick={e => e.stopPropagation()}>
       <img src={src} alt={label} style={{ width: `${scale * 100}%`, maxWidth: "none" }} />
     </div>
-  </div>;
-}
-
-function HistogramChart({ counts }: { counts: number[][] }) {
-  // OpenCV returns channels in B, G, R order.
-  const data = useMemo(() => counts[0].map((_, i) => ({ v: i, b: counts[0][i], g: counts[1][i], r: counts[2][i] })), [counts]);
-  return <div style={{ height: 180, marginTop: 10 }}>
-    <ResponsiveContainer>
-      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -18 }}>
-        <CartesianGrid stroke="#1c293a" vertical={false} />
-        <XAxis dataKey="v" ticks={[0, 64, 128, 192, 255]} tick={{ fill: "#74849a", fontSize: 10 }} stroke="#2a3c55" />
-        <YAxis tick={{ fill: "#74849a", fontSize: 10 }} stroke="#2a3c55" tickFormatter={n => n >= 1000 ? `${Math.round(n / 1000)}k` : n} />
-        <Tooltip contentStyle={{ background: "#101a28", border: "1px solid #2a3c55", fontSize: 11 }} labelFormatter={v => `Value ${v}`} />
-        <Area type="monotone" dataKey="r" name="Red" stroke="#ef6262" fill="#ef6262" fillOpacity={0.15} dot={false} isAnimationActive={false} />
-        <Area type="monotone" dataKey="g" name="Green" stroke="#6fcf97" fill="#6fcf97" fillOpacity={0.15} dot={false} isAnimationActive={false} />
-        <Area type="monotone" dataKey="b" name="Blue" stroke="#61a9ff" fill="#61a9ff" fillOpacity={0.15} dot={false} isAnimationActive={false} />
-      </AreaChart>
-    </ResponsiveContainer>
   </div>;
 }

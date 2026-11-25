@@ -53,7 +53,7 @@ def test_image_analysis_end_to_end(api):
     assert r.status_code == 200
     body = r.json(); ident = body["id"]
     algorithms = body["result"]["algorithms"]
-    assert set(algorithms) == {"ela", "orb", "noise", "compression", "histogram", "metadata"}
+    assert set(algorithms) == {"ela", "orb", "ghost", "compression", "metadata"}
     assert all(v["status"] == "completed" for v in algorithms.values())
     assert algorithms["orb"]["flagged"] and body["result"]["indicator_summary"]["candidate_indicators"] == 1
     assert {"map_visualization", "block_z_max"} <= set(algorithms["ela"])
@@ -61,7 +61,7 @@ def test_image_analysis_end_to_end(api):
     listed = api.get("/api/investigations").json()
     assert listed[0]["id"] == ident and listed[0]["candidate_indicators"] == 1
     assert api.get(f"/api/investigations/{ident}").json()["sha256"] == body["sha256"]
-    for name in ("ela.png", "ela_map.png", "orb.png", "noise.png", "noise_map.png", "histogram.png"):
+    for name in ("ela.png", "ela_map.png", "orb.png", "ghost_map.png"):
         assert api.get(f"/api/investigations/{ident}/artifacts/{name}").status_code == 200, name
     assert api.get(f"/api/investigations/{ident}/original").content == copied_patch_png()
     assert api.get(f"/api/investigations/{ident}/verify").json()["integrity_verified"] is True

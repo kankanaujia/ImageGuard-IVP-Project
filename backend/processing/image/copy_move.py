@@ -24,13 +24,26 @@ FLAG_MIN_GROUP = 5        # flag only groups at least this large ...
 FLAG_MIN_SHIFT = 40.0     # ... whose copy lies at least this far (median px) from its source
 
 
-def self_matches(gray: np.ndarray, nfeatures: int = 2500, ratio: float = RATIO, min_distance: float = MIN_DISTANCE):
+SIFT_RATIO = 0.6          # SIFT's float descriptors separate better, so a stricter ratio test is used
+
+
+def detect(gray: np.ndarray, method: str):
+    """Keypoints, descriptors and the matching norm for 'orb' or 'sift'."""
+    if method == "sift":
+        # A low contrast threshold finds keypoints in flatter regions, where small copies often are.
+        kp, desc = cv2.SIFT_create(nfeatures=4000, contrastThreshold=0.02).detectAndCompute(gray, None)
+        return kp, desc, cv2.NORM_L2
+    kp, desc = cv2.ORB_create(nfeatures=2500).detectAndCompute(gray, None)
+    return kp, desc, cv2.NORM_HAMMING
+
+
+def self_matches(gray: np.ndarray, method: str = "orb", ratio: float | None = None, min_distance: float = MIN_DISTANCE):
     """Keypoints and oriented, de-duplicated self-matches as two (n, 2) point arrays."""
-    orb = cv2.ORB_create(nfeatures=nfeatures)
-    keypoints, descriptors = orb.detectAndCompute(gray, None)
+    ratio = ratio if ratio is not None else (SIFT_RATIO if method == "sift" else RATIO)
+    keypoints, descriptors, norm = detect(gray, method)
     pairs = set()
     if descriptors is not None and len(descriptors) >= 3:
-        raw = cv2.BFMatcher(cv2.NORM_HAMMING).knnMatch(descriptors, descriptors, k=3)
+        raw = cv2.BFMatcher(norm).knnMatch(descriptors, descriptors, k=3)
         for candidates in raw:
             candidates = sorted((m for m in candidates if m.queryIdx != m.trainIdx), key=lambda m: m.distance)
             if len(candidates) < 2: continue

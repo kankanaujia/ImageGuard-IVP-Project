@@ -9,9 +9,8 @@ from PIL import Image
 from .image.ela import analyze_ela
 from .image.copy_move import analyze_copy_move
 from .image.compression import analyze_compression
+from .image.jpeg_ghost import analyze_ghost
 from .image.metadata import extract_metadata
-from .image.noise_analysis import analyze_noise
-from .image.histogram import analyze_histogram
 from .video.frame_extraction import extract_frames
 from .video.frame_hashing import hash_frames
 from .video.ssim_analysis import analyze_ssim
@@ -34,9 +33,8 @@ def run_image(source: Path, outputs: Path, progress: Progress = None) -> dict:
     checks = {
         "ela": ("Error level analysis", lambda: analyze_ela(source, outputs / "ela.png", map_output=outputs / "ela_map.png")),
         "orb": ("Copy-move detection", lambda: analyze_copy_move(source, outputs / "orb.png")),
-        "noise": ("Noise analysis", lambda: analyze_noise(source, outputs / "noise.png", map_output=outputs / "noise_map.png")),
+        "ghost": ("JPEG ghost analysis", lambda: analyze_ghost(source, outputs / "ghost_map.png")),
         "compression": ("Compression history", lambda: analyze_compression(source)),
-        "histogram": ("Colour histogram", lambda: analyze_histogram(source, outputs / "histogram.png")),
         "metadata": ("Metadata", lambda: extract_metadata(source)),
     }
     algorithms = {}
@@ -50,6 +48,7 @@ def run_image(source: Path, outputs: Path, progress: Progress = None) -> dict:
             "limitations": ["ELA is sensitive to recompression and conversion; its global peak mostly reflects how the file was last saved.",
                             "ORB matches can arise from natural repeated texture.",
                             "Heat maps highlight blocks that differ from the rest of the image; edges, texture, saturation and blur also differ.",
+                            "JPEG ghosts only appear when pasted content was previously saved at a different JPEG quality.",
                             "Metadata and compression settings can be absent or changed during ordinary workflows."],
             "processing_seconds": round(perf_counter()-started, 3)}
 

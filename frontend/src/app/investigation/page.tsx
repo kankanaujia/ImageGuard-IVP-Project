@@ -116,7 +116,7 @@ export default function NewInvestigation() {
       <section>
         <div className="panel">
           <div className="section-title">Analysis pipeline</div>
-          <p className="subtle">Images are checked for compression differences (ELA and its heat map), copied regions (ORB with RANSAC), noise consistency, compression history, colour distributions and metadata. Videos are sampled once per second for repeated frames, similarity changes, scene cuts and motion spikes.</p>
+          <p className="subtle">Images are checked for compression differences (ELA heat map), copied regions (ORB with RANSAC), spliced regions (JPEG ghosts), compression history and metadata. Videos are sampled once per second for repeated frames, similarity changes, scene cuts and motion spikes.</p>
           <div className="kv"><span>Evidence integrity</span><span>SHA-256 at intake</span></div>
           <div className="kv"><span>Working files</span><span>Stored separately</span></div>
           <div className="kv"><span>Batch processing</span><span>{CONCURRENCY} files at a time</span></div>

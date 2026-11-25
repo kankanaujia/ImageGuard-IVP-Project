@@ -12,11 +12,9 @@ export interface ImageResult {
       map_visualization?:string;block_z_max?:number;unusual_block_share?:number;map_note?:string};
     orb?:AlgorithmStatus&{keypoints:number;raw_candidate_matches:number;geometrically_consistent_matches:number;candidate_matches:number;visualization:string;interpretation:string;
       flagged?:boolean;copy_shift_px?:number;consistent_groups?:number};
-    noise?:AlgorithmStatus&{residual_mean:number;residual_std:number;tile_variance_min:number;tile_variance_max:number;visualization:string;note:string;
-      map_visualization?:string;block_z_max_abs?:number;unusual_block_share?:number;map_note?:string};
+    ghost?:AlgorithmStatus&{map_visualization:string;block_z_max:number;unusual_block_share:number;ghost_quality:number|null;qualities:[number,number];note:string};
     compression?:AlgorithmStatus&{format:string;is_jpeg:boolean;estimated_quality?:number;standard_ijg_tables?:boolean;quantization_tables?:number;
       chroma_subsampling?:string;progressive?:boolean;observations:string[];note?:string};
-    histogram?:AlgorithmStatus&{rgb_counts:number[][];grayscale_mean:number;grayscale_std:number;visualization:string};
     metadata?:AlgorithmStatus&{format:string;width:number;height:number;mode:string;exif:Record<string,string>;observations:string[]};
   };
   indicator_summary:{candidate_indicators:number;statement:string};

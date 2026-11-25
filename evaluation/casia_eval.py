@@ -60,15 +60,11 @@ def analyse(path_str: str, label: int) -> dict:
         row["ela_peak"] = a["ela"]["difference_peak"] if ok("ela") else None
         row["orb_raw"] = a["orb"]["raw_candidate_matches"] if ok("orb") else None
         row["orb_consistent"] = a["orb"]["geometrically_consistent_matches"] if ok("orb") else None
-        if ok("noise"):
-            n = a["noise"]
-            row["noise_std"] = n["residual_std"]
-            row["noise_tile_ratio"] = n["tile_variance_max"] / n["tile_variance_min"] if n["tile_variance_min"] > 0 else None
         row["exif_tags"] = len(a["metadata"]["exif"]) if ok("metadata") else None
         row["ela_block_z_max"] = a["ela"].get("block_z_max") if ok("ela") else None
         row["ela_unusual_share"] = a["ela"].get("unusual_block_share") if ok("ela") else None
-        row["noise_block_z_max"] = a["noise"].get("block_z_max_abs") if ok("noise") else None
-        row["noise_unusual_share"] = a["noise"].get("unusual_block_share") if ok("noise") else None
+        row["ghost_block_z_max"] = a["ghost"].get("block_z_max") if ok("ghost") else None
+        row["ghost_unusual_share"] = a["ghost"].get("unusual_block_share") if ok("ghost") else None
         row["jpeg_quality"] = a["compression"].get("estimated_quality") if ok("compression") else None
         row["errors"] = ";".join(f"{k}:{v.get('error', '')[:80]}" for k, v in a.items() if v.get("status") == "error")
         row["app_flag"] = int(bool(a["orb"].get("flagged"))) if ok("orb") else 0
@@ -105,12 +101,10 @@ SCORES = {  # name -> (column, direction: +1 means larger = more suspicious)
     "ORB consistent matches": ("orb_consistent", 1),
     "ORB raw matches": ("orb_raw", 1),
     "ELA peak difference": ("ela_peak", 1),
-    "Noise tile variance ratio": ("noise_tile_ratio", 1),
-    "Noise residual std": ("noise_std", 1),
     "ELA heat map: strongest block": ("ela_block_z_max", 1),
     "ELA heat map: unusual share": ("ela_unusual_share", 1),
-    "Noise heat map: strongest block": ("noise_block_z_max", 1),
-    "Noise heat map: unusual share": ("noise_unusual_share", 1),
+    "JPEG ghost: strongest block": ("ghost_block_z_max", 1),
+    "JPEG ghost: unusual share": ("ghost_unusual_share", 1),
 }
 
 
@@ -171,7 +165,7 @@ def plot(rows: list[dict], metrics: dict, out: Path) -> None:
     ax.legend(fontsize=7, loc="lower right"); fig.tight_layout(); fig.savefig(out / "roc.png", dpi=200); plt.close(fig)
 
     fig, axes = plt.subplots(1, 3, figsize=(12, 3.4))
-    for ax, (col, title, log) in zip(axes, [("orb_consistent", "ORB consistent matches", True), ("ela_peak", "ELA peak difference", False), ("noise_tile_ratio", "Noise tile variance ratio", True)]):
+    for ax, (col, title, log) in zip(axes, [("orb_consistent", "ORB consistent matches", True), ("ela_peak", "ELA peak difference", False), ("ghost_block_z_max", "JPEG ghost strongest block", False)]):
         for label, colour, name in ((0, "#2b7bb9", "Authentic"), (1, "#d9534f", "Tampered")):
             vals = np.array([r[col] for r in rows if r["label"] == label and r.get(col) is not None], dtype=float)
             if not len(vals): continue
@@ -227,8 +221,8 @@ def main() -> None:
 
     rows.sort(key=lambda r: (r["label"], r["file"]))
     fields = ["file", "label", "type", "format", "width", "height", "seconds", "ela_peak", "orb_raw", "orb_consistent",
-              "noise_std", "noise_tile_ratio", "exif_tags", "ela_block_z_max", "ela_unusual_share", "noise_block_z_max",
-              "noise_unusual_share", "jpeg_quality", "app_flag", "errors"]
+              "exif_tags", "ela_block_z_max", "ela_unusual_share", "ghost_block_z_max",
+              "ghost_unusual_share", "jpeg_quality", "app_flag", "errors"]
     with open(args.out / "per_image.csv", "w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore"); writer.writeheader(); writer.writerows(rows)
     metrics = evaluate(rows)

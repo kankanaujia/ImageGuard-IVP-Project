@@ -2,7 +2,7 @@
 
 For every tampered image that has a ground-truth mask ("CASIA 2 Groundtruth/<name>_gt.png"):
   * ELA heat map      - robust z of the per-block ELA difference (backend ela_block_z)
-  * Noise heat map    - |robust z| of the per-block wavelet noise level (backend noise_block_z)
+  * JPEG ghost map    - robust z of the per-block ghost dip across re-save qualities (backend ghost_block_scores)
   * Copy-move regions - 16 px discs around both ends of the largest consistent ORB group
 Measured per image and averaged:
   * pixel AUC         - how well the map ranks edited pixels above unedited ones (0.5 = chance)
@@ -54,7 +54,8 @@ def evaluate_image(image_path: str, mask_path: str) -> dict:
     import cv2
     from PIL import Image
     from backend.processing.image.ela import ela_block_z, ela_difference
-    from backend.processing.image.noise_analysis import noise_block_z
+    from backend.processing.image.jpeg_ghost import ghost_block_scores
+    from backend.processing.image.heatmap import robust_z
     from backend.processing.image.copy_move import self_matches, consistent_groups, FLAG_MIN_GROUP, FLAG_MIN_SHIFT
     name = Path(image_path).name
     row = {"file": name, "type": tamper_type(name)}
@@ -70,8 +71,8 @@ def evaluate_image(image_path: str, mask_path: str) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         ela = blocks_to_pixels(ela_block_z(ela_difference(rgb, Path(tmp) / "w.jpg", 90)), truth.shape)
     gray = cv2.cvtColor(np.asarray(rgb)[:, :, ::-1], cv2.COLOR_BGR2GRAY)
-    noise = blocks_to_pixels(np.abs(noise_block_z(gray)), truth.shape)
-    for key, score in (("ela", ela), ("noise", noise)):
+    ghost = blocks_to_pixels(robust_z(ghost_block_scores(rgb)[0]), truth.shape)
+    for key, score in (("ela", ela), ("ghost", ghost)):
         row[f"{key}_auc"] = pixel_auc(score, truth, rng)
         row[f"{key}_f1"], row[f"{key}_iou"] = f1_iou(score >= Z, truth)
     _, a, b = self_matches(gray)
@@ -101,7 +102,7 @@ def summarise(rows: list[dict]) -> dict:
         out["by_type"][kind] = {
             "images": len(sub), "mean_tampered_fraction": mean("tampered_fraction"), "baseline_f1": mean("baseline_f1"),
             "ela": {"pixel_auc": mean("ela_auc"), "f1": mean("ela_f1"), "iou": mean("ela_iou")},
-            "noise": {"pixel_auc": mean("noise_auc"), "f1": mean("noise_f1"), "iou": mean("noise_iou")},
+            "ghost": {"pixel_auc": mean("ghost_auc"), "f1": mean("ghost_f1"), "iou": mean("ghost_iou")},
             "copy_move": {"flagged_share": len(flagged) / len(sub), "f1_all": mean("cm_f1"), "iou_all": mean("cm_iou"),
                           "f1_when_flagged": float(np.mean([r["cm_f1"] for r in flagged])) if flagged else None}}
     return out
@@ -112,7 +113,7 @@ def summary_md(s: dict) -> str:
              "| Images | Method | Pixel AUC | F1 | IoU |", "|---|---|---|---|---|"]
     for kind, v in s["by_type"].items():
         lines.append(f"| {kind} ({v['images']}) | ELA heat map | {v['ela']['pixel_auc']:.3f} | {v['ela']['f1']:.3f} | {v['ela']['iou']:.3f} |")
-        lines.append(f"| {kind} | Noise heat map | {v['noise']['pixel_auc']:.3f} | {v['noise']['f1']:.3f} | {v['noise']['iou']:.3f} |")
+        lines.append(f"| {kind} | JPEG ghost map | {v['ghost']['pixel_auc']:.3f} | {v['ghost']['f1']:.3f} | {v['ghost']['iou']:.3f} |")
         cm = v["copy_move"]
         lines.append(f"| {kind} | Copy-move regions (flagged {100 * cm['flagged_share']:.1f}%) | - | {cm['f1_all']:.3f} | {cm['iou_all']:.3f} |")
         lines.append(f"| {kind} | Baseline: whole image | 0.500 | {v['baseline_f1']:.3f} | - |")
